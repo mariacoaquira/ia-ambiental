@@ -3,33 +3,138 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Obligaciones Ambientales</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<title>Asistente Ambiental</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-:root{--verde:#1a6b4a;--verde-claro:#e8f5ef;--verde-medio:#2d9467;--amber:#b86e0a;--amber-claro:#fdf3e3;--rojo:#b83232;--rojo-claro:#fdecea;--gris-bg:#f5f4f1;--gris-borde:#e0ded8;--gris-texto:#6b6860;--negro:#1a1916;--blanco:#fdfcfa;--radio:6px}
+:root{
+  --verde:#1a6b4a;--verde-claro:#e8f5ef;--verde-medio:#2d9467;
+  --amber:#b86e0a;--amber-claro:#fdf3e3;
+  --rojo:#b83232;--rojo-claro:#fdecea;
+  --gris-bg:#f5f4f1;--gris-borde:#e0ded8;--gris-texto:#6b6860;
+  --negro:#1a1916;--blanco:#fdfcfa;--radio:8px;
+}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'DM Sans',sans-serif;background:var(--gris-bg);color:var(--negro);font-size:14px;line-height:1.5}
-nav{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:52px;border-bottom:1px solid var(--gris-borde);background:var(--blanco);position:sticky;top:0;z-index:50}
-.nav-titulo{font-size:15px;font-weight:500}
-.nav-meta{font-size:12px;color:var(--gris-texto)}
-main{max-width:1160px;margin:0 auto;padding:1.5rem}
+body{font-family:'DM Sans',sans-serif;background:var(--gris-bg);color:var(--negro);font-size:14px;line-height:1.5;min-height:100vh}
+
+/* NAV */
+nav{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;border-bottom:1px solid var(--gris-borde);background:var(--blanco);position:sticky;top:0;z-index:50}
+.nav-logo{font-family:'DM Serif Display',serif;font-size:18px;color:var(--verde);letter-spacing:-.3px}
+.nav-logo span{color:var(--negro)}
+.nav-badge{font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;background:var(--verde-claro);color:var(--verde)}
+
+/* PANTALLAS */
+.screen{display:none;min-height:calc(100vh - 56px)}
+.screen.active{display:flex}
+
+/* ══════════════════════════════════════
+   PANTALLA 1 — BIENVENIDA / CARGA
+══════════════════════════════════════ */
+#s-upload{flex-direction:column;align-items:center;justify-content:center;padding:3rem 1.5rem}
+
+.hero{text-align:center;max-width:560px;margin-bottom:3rem}
+.hero-tag{display:inline-block;font-size:11px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--verde);background:var(--verde-claro);padding:4px 12px;border-radius:20px;margin-bottom:1.25rem}
+.hero-titulo{font-family:'DM Serif Display',serif;font-size:36px;line-height:1.15;color:var(--negro);margin-bottom:1rem}
+.hero-titulo em{font-style:italic;color:var(--verde)}
+.hero-sub{font-size:15px;color:var(--gris-texto);line-height:1.6;max-width:440px;margin:0 auto}
+
+.form-card{background:var(--blanco);border:1px solid var(--gris-borde);border-radius:14px;padding:2rem;width:100%;max-width:560px}
+
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+label{font-size:12px;font-weight:500;color:var(--gris-texto);text-transform:uppercase;letter-spacing:.05em}
+input[type=text],select{font-family:'DM Sans',sans-serif;font-size:14px;padding:9px 12px;border-radius:var(--radio);border:1px solid var(--gris-borde);background:var(--blanco);color:var(--negro);width:100%;transition:border-color .15s}
+input[type=text]:focus,select:focus{outline:none;border-color:var(--verde-medio)}
+select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b6860'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+
+/* DROP ZONE */
+.drop-zone{border:1.5px dashed var(--gris-borde);border-radius:var(--radio);padding:2rem;text-align:center;cursor:pointer;transition:all .2s;position:relative;background:var(--gris-bg)}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--verde-medio);background:var(--verde-claro)}
+.drop-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.drop-icon{width:40px;height:40px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;background:var(--blanco);border:1px solid var(--gris-borde);border-radius:10px}
+.drop-icon svg{width:20px;height:20px;stroke:var(--gris-texto)}
+.drop-titulo{font-size:14px;font-weight:500;color:var(--negro);margin-bottom:4px}
+.drop-sub{font-size:12px;color:var(--gris-texto)}
+.drop-archivo{display:none;align-items:center;gap:10px;padding:10px 14px;background:var(--verde-claro);border-radius:var(--radio);margin-top:12px}
+.drop-archivo.visible{display:flex}
+.drop-archivo-nombre{font-size:13px;color:var(--verde);font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.drop-archivo-x{background:none;border:none;color:var(--verde);cursor:pointer;font-size:16px;flex-shrink:0;padding:0 4px}
+
+.btn-procesar{width:100%;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;padding:12px;border-radius:var(--radio);border:none;background:var(--verde);color:white;cursor:pointer;margin-top:1.25rem;transition:opacity .15s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-procesar:hover{opacity:.9}
+.btn-procesar:disabled{opacity:.4;cursor:not-allowed}
+.btn-procesar svg{width:16px;height:16px;stroke:white}
+
+.steps{display:flex;gap:2rem;justify-content:center;margin-top:2.5rem;max-width:560px}
+.step{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--gris-texto)}
+.step-num{width:22px;height:22px;border-radius:50%;background:var(--gris-borde);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--gris-texto);flex-shrink:0}
+.step-txt{line-height:1.3}
+
+/* ══════════════════════════════════════
+   PANTALLA 2 — PROCESANDO
+══════════════════════════════════════ */
+#s-proc{flex-direction:column;align-items:center;justify-content:center;padding:3rem 1.5rem}
+
+.proc-card{background:var(--blanco);border:1px solid var(--gris-borde);border-radius:14px;padding:2.5rem 2rem;width:100%;max-width:500px;text-align:center}
+.proc-icono{width:56px;height:56px;border-radius:50%;background:var(--verde-claro);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem}
+.proc-icono svg{width:26px;height:26px;stroke:var(--verde);animation:spin 2s linear infinite}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.proc-titulo{font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:8px}
+.proc-sub{font-size:13px;color:var(--gris-texto);margin-bottom:2rem}
+
+.proc-doc{display:flex;align-items:center;gap:10px;background:var(--gris-bg);border-radius:var(--radio);padding:10px 14px;margin-bottom:2rem;text-align:left}
+.proc-doc-icon{width:32px;height:32px;background:var(--verde-claro);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.proc-doc-icon svg{width:16px;height:16px;stroke:var(--verde)}
+.proc-doc-nombre{font-size:13px;font-weight:500;color:var(--negro);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.proc-doc-meta{font-size:11px;color:var(--gris-texto)}
+
+.pasos-proc{display:flex;flex-direction:column;gap:8px;text-align:left;margin-bottom:2rem}
+.paso-proc{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:var(--radio);background:var(--gris-bg);transition:all .3s}
+.paso-proc.activo{background:var(--verde-claro)}
+.paso-proc.done{background:var(--blanco);border:1px solid var(--gris-borde)}
+.paso-proc-icono{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px}
+.paso-proc.activo .paso-proc-icono{background:var(--verde);color:white}
+.paso-proc.done .paso-proc-icono{background:var(--verde-medio);color:white}
+.paso-proc:not(.activo):not(.done) .paso-proc-icono{background:var(--gris-borde);color:var(--gris-texto)}
+.paso-proc-txt{font-size:13px;color:var(--negro)}
+.paso-proc:not(.activo):not(.done) .paso-proc-txt{color:var(--gris-texto)}
+.paso-proc-sub{font-size:11px;color:var(--gris-texto);margin-top:1px}
+
+.barra-proc-wrap{background:var(--gris-borde);border-radius:4px;height:4px;overflow:hidden}
+.barra-proc{height:100%;background:var(--verde);border-radius:4px;transition:width .5s ease;width:0%}
+
+/* ══════════════════════════════════════
+   PANTALLA 3 — RESULTADO (tabla)
+══════════════════════════════════════ */
+#s-result{flex-direction:column}
+
+.res-nav{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:52px;border-bottom:1px solid var(--gris-borde);background:var(--blanco);position:sticky;top:56px;z-index:40}
+.res-nav-back{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--gris-texto);cursor:pointer;background:none;border:none;padding:0}
+.res-nav-back:hover{color:var(--negro)}
+.res-nav-titulo{font-size:13px;font-weight:500}
+.res-nav-right{display:flex;gap:8px}
+
+.res-main{max-width:1160px;margin:0 auto;padding:1.5rem;width:100%}
+
 .doc-card{background:var(--blanco);border:1px solid var(--gris-borde);border-radius:10px;padding:1.25rem 1.5rem;margin-bottom:1.25rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem}
 .doc-tipo{font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--verde);background:var(--verde-claro);padding:3px 9px;border-radius:20px;display:inline-block;margin-bottom:5px}
 .doc-titulo{font-family:'DM Serif Display',serif;font-size:19px;margin-bottom:3px}
 .doc-sub{font-size:12px;color:var(--gris-texto)}
-.btn-exp{font-size:12px;font-weight:500;padding:7px 14px;border-radius:var(--radio);border:1px solid var(--gris-borde);background:var(--blanco);color:var(--negro);cursor:pointer;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:6px}
-.btn-exp:hover{background:var(--gris-bg)}
+
 .metricas{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.25rem}
 .metrica{background:var(--blanco);border:1px solid var(--gris-borde);border-radius:var(--radio);padding:1rem 1.25rem}
 .met-label{font-size:11px;color:var(--gris-texto);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
 .met-val{font-size:26px;font-weight:300}
 .mv-a{color:var(--amber)}.mv-v{color:var(--verde-medio)}.mv-r{color:var(--rojo)}
-.barra{height:3px;background:var(--gris-borde);border-radius:2px;margin-bottom:1.25rem;display:flex;overflow:hidden}
-.barra div{height:100%;transition:width .3s}
-.b-v{background:var(--verde-medio)}.b-a{background:var(--amber)}.b-r{background:var(--rojo)}
+
+.barra-met{height:3px;background:var(--gris-borde);border-radius:2px;margin-bottom:1.25rem;display:flex;overflow:hidden}
+.barra-met div{height:100%;transition:width .3s}
+.bm-v{background:var(--verde-medio)}.bm-a{background:var(--amber)}.bm-r{background:var(--rojo)}
+
 .controles{display:flex;gap:8px;margin-bottom:1rem;align-items:center;flex-wrap:wrap}
-select{font-family:'DM Sans',sans-serif;font-size:13px;padding:6px 26px 6px 10px;border-radius:var(--radio);border:1px solid var(--gris-borde);background:var(--blanco) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b6860'/%3E%3C/svg%3E") no-repeat right 8px center;color:var(--negro);cursor:pointer;appearance:none}
+.ctrl-select{font-family:'DM Sans',sans-serif;font-size:13px;padding:6px 26px 6px 10px;border-radius:var(--radio);border:1px solid var(--gris-borde);background:var(--blanco) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b6860'/%3E%3C/svg%3E") no-repeat right 8px center;color:var(--negro);cursor:pointer;appearance:none}
 .ctrl-info{margin-left:auto;font-size:12px;color:var(--gris-texto)}
+
 .tabla-wrap{background:var(--blanco);border:1px solid var(--gris-borde);border-radius:10px;overflow:hidden}
 table{width:100%;border-collapse:collapse;table-layout:fixed}
 col.cn{width:44px}col.cd{width:36%}col.cc{width:15%}col.ce{width:9%}col.cf{width:13%}col.cs{width:11%}col.ca{width:68px}
@@ -47,6 +152,7 @@ tr.fila.sel td{background:#f0f7f4}
 .est-c{display:flex;align-items:center;font-size:12px}
 .btn-ver{font-family:'DM Sans',sans-serif;font-size:12px;padding:4px 10px;border-radius:var(--radio);border:1px solid var(--gris-borde);background:var(--blanco);color:var(--negro);cursor:pointer}
 .btn-ver:hover,.btn-ver.act{background:var(--verde);color:white;border-color:var(--verde)}
+
 .paginacion{display:flex;align-items:center;justify-content:space-between;margin-top:1rem}
 .pag-info{font-size:12px;color:var(--gris-texto)}
 .pag-btns{display:flex;gap:4px}
@@ -54,7 +160,7 @@ tr.fila.sel td{background:#f0f7f4}
 .pag-btn:hover{background:var(--gris-bg)}
 .pag-btn.activo{background:var(--verde);color:white;border-color:var(--verde)}
 
-/* PANEL */
+/* PANEL DETALLE */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.2);z-index:100}
 .overlay.vis{display:block}
 .panel{position:fixed;top:0;right:0;height:100vh;width:500px;max-width:95vw;background:var(--blanco);border-left:1px solid var(--gris-borde);z-index:101;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s ease}
@@ -84,7 +190,7 @@ tr.fila.sel td{background:#f0f7f4}
 .btn-nav:hover{background:var(--gris-bg)}
 .btn-nav:disabled{opacity:.35;cursor:not-allowed}
 
-/* MODAL */
+/* MODAL EXPORTAR */
 .modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:200;align-items:center;justify-content:center}
 .modal-ov.vis{display:flex}
 .modal{background:var(--blanco);border-radius:10px;padding:1.5rem;width:300px;border:1px solid var(--gris-borde)}
@@ -94,79 +200,223 @@ tr.fila.sel td{background:#f0f7f4}
 .m-btn{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:9px 14px;border-radius:var(--radio);border:1px solid var(--gris-borde);background:var(--blanco);color:var(--negro);cursor:pointer;text-align:left}
 .m-btn:hover{background:var(--gris-bg)}
 .m-btn.p{background:var(--verde);color:white;border-color:var(--verde)}
-.m-btn.p:hover{opacity:.9}
 .m-cancel{margin-top:10px;font-size:12px;color:var(--gris-texto);text-align:center;cursor:pointer}
 .m-cancel:hover{color:var(--negro)}
+
+.btn-secondary{font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;padding:7px 14px;border-radius:var(--radio);border:1px solid var(--gris-borde);background:var(--blanco);color:var(--negro);cursor:pointer;display:flex;align-items:center;gap:6px}
+.btn-secondary:hover{background:var(--gris-bg)}
+.btn-primary{font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;padding:7px 14px;border-radius:var(--radio);border:none;background:var(--verde);color:white;cursor:pointer;display:flex;align-items:center;gap:6px}
+.btn-primary:hover{opacity:.9}
+
+@media(max-width:640px){
+  .form-grid{grid-template-columns:1fr}
+  .form-group.full{grid-column:1}
+  .metricas{grid-template-columns:repeat(2,1fr)}
+  .steps{flex-direction:column;gap:1rem}
+}
 </style>
 </head>
 <body>
 
 <nav>
-  <div class="nav-titulo">Obligaciones Ambientales</div>
-  <div class="nav-meta">DIA — La Querendosa · Cerro Verde</div>
+  <div class="nav-logo">Asistente <span>Ambiental</span></div>
+  <div class="nav-badge" id="nav-badge">Sector Minero</div>
 </nav>
 
-<main>
-  <div class="doc-card">
-    <div>
-      <div class="doc-tipo">Declaración de Impacto Ambiental</div>
-      <div class="doc-titulo">La Querendosa — Sociedad Minera Cerro Verde S.A.A.</div>
-      <div class="doc-sub">Plan de Manejo Ambiental + Medidas de Cierre · Procesado el 04/05/2026 · 67 obligaciones extraídas</div>
+<!-- ══ PANTALLA 1: CARGA ══ -->
+<div class="screen active" id="s-upload">
+  <div class="hero">
+    <div class="hero-tag">Gestión de obligaciones · IGA</div>
+    <h1 class="hero-titulo">Conoce y cumple tus <em>obligaciones ambientales</em></h1>
+    <p class="hero-sub">Sube tu Instrumento de Gestión Ambiental y el sistema extrae automáticamente todas tus obligaciones, clasificadas y listas para hacer seguimiento.</p>
+  </div>
+
+  <div class="form-card">
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Nombre de la empresa</label>
+        <input type="text" id="inp-empresa" placeholder="Ej. Sociedad Minera Cerro Verde S.A.A.">
+      </div>
+      <div class="form-group">
+        <label>Tipo de IGA</label>
+        <select id="inp-tipo">
+          <option value="">Seleccionar…</option>
+          <option value="DIA">DIA — Declaración de Impacto Ambiental</option>
+          <option value="EIA-sd">EIA-sd — Estudio semidetallado</option>
+          <option value="EIA-d">EIA-d — Estudio detallado</option>
+          <option value="MEIA">MEIA — Modificación de EIA</option>
+          <option value="ITS">ITS — Informe Técnico Sustentatorio</option>
+          <option value="IGAC">IGAC — Instrumento Correctivo</option>
+          <option value="Plan de Cierre">Plan de Cierre de Minas</option>
+          <option value="PAMA">PAMA</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Sector</label>
+        <select id="inp-sector">
+          <option value="">Seleccionar…</option>
+          <option value="Minería">Minería</option>
+          <option value="Hidrocarburos">Hidrocarburos</option>
+          <option value="Industria">Industria manufacturera</option>
+          <option value="Energía">Energía</option>
+          <option value="Saneamiento">Saneamiento</option>
+          <option value="Pesca">Pesca</option>
+          <option value="Agricultura">Agricultura</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label>Documento IGA (PDF)</label>
+        <div class="drop-zone" id="drop-zone">
+          <input type="file" id="inp-file" accept=".pdf" onchange="onFile(this.files[0])">
+          <div class="drop-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 12V4M8 8l4-4 4 4"/>
+            </svg>
+          </div>
+          <div class="drop-titulo">Arrastra tu PDF aquí</div>
+          <div class="drop-sub">o haz clic para seleccionar · Máx. 500 MB</div>
+        </div>
+        <div class="drop-archivo" id="drop-archivo">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--verde)" stroke-width="1.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <span class="drop-archivo-nombre" id="drop-nombre">—</span>
+          <button class="drop-archivo-x" onclick="quitarArchivo()">✕</button>
+        </div>
+      </div>
     </div>
-    <button class="btn-exp" onclick="document.getElementById('modal').classList.add('vis')">
-      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v8M5 7l3 3 3-3M3 12h10"/></svg>
-      Exportar
+
+    <button class="btn-procesar" id="btn-procesar" onclick="iniciarProceso()" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+      Extraer obligaciones
     </button>
   </div>
 
-  <div class="metricas">
-    <div class="metrica"><div class="met-label">Total</div><div class="met-val" id="cnt-t">—</div></div>
-    <div class="metrica"><div class="met-label">Pendientes</div><div class="met-val mv-a" id="cnt-p">—</div></div>
-    <div class="metrica"><div class="met-label">Cumplidas</div><div class="met-val mv-v" id="cnt-c">—</div></div>
-    <div class="metrica"><div class="met-label">Vencidas</div><div class="met-val mv-r" id="cnt-v">—</div></div>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-txt">Sube tu IGA en PDF</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-txt">Extracción automática con IA</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-txt">Visualiza y gestiona tus obligaciones</div></div>
+  </div>
+</div>
+
+<!-- ══ PANTALLA 2: PROCESANDO ══ -->
+<div class="screen" id="s-proc">
+  <div class="proc-card">
+    <div class="proc-icono">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+      </svg>
+    </div>
+    <h2 class="proc-titulo">Analizando tu documento</h2>
+    <p class="proc-sub">El sistema está extrayendo y clasificando las obligaciones ambientales de tu IGA.</p>
+
+    <div class="proc-doc">
+      <div class="proc-doc-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <div>
+        <div class="proc-doc-nombre" id="proc-nombre">—</div>
+        <div class="proc-doc-meta" id="proc-meta">—</div>
+      </div>
+    </div>
+
+    <div class="pasos-proc" id="pasos-proc">
+      <div class="paso-proc" id="paso-0">
+        <div class="paso-proc-icono">1</div>
+        <div><div class="paso-proc-txt">Extracción de texto (Document AI)</div><div class="paso-proc-sub">Procesando páginas del documento…</div></div>
+      </div>
+      <div class="paso-proc" id="paso-1">
+        <div class="paso-proc-icono">2</div>
+        <div><div class="paso-proc-txt">Generando embeddings semánticos</div><div class="paso-proc-sub">Vectorizando contenido con VertexAI…</div></div>
+      </div>
+      <div class="paso-proc" id="paso-2">
+        <div class="paso-proc-icono">3</div>
+        <div><div class="paso-proc-txt">Identificando obligaciones con IA</div><div class="paso-proc-sub">Analizando categorías ambientales…</div></div>
+      </div>
+      <div class="paso-proc" id="paso-3">
+        <div class="paso-proc-icono">4</div>
+        <div><div class="paso-proc-txt">Clasificando y estructurando resultados</div><div class="paso-proc-sub">Preparando tabla de obligaciones…</div></div>
+      </div>
+    </div>
+
+    <div class="barra-proc-wrap">
+      <div class="barra-proc" id="barra-proc"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PANTALLA 3: RESULTADO ══ -->
+<div class="screen" id="s-result">
+  <div class="res-nav">
+    <button class="res-nav-back" onclick="volverInicio()">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 4L6 8l4 4"/></svg>
+      Nuevo documento
+    </button>
+    <div class="res-nav-titulo" id="res-nav-titulo"></div>
+    <div class="res-nav-right">
+      <button class="btn-secondary" onclick="document.getElementById('modal').classList.add('vis')">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v8M5 7l3 3 3-3M3 12h10"/></svg>
+        Exportar
+      </button>
+    </div>
   </div>
 
-  <div class="barra">
-    <div class="b-v" id="bp-c" style="width:0%"></div>
-    <div class="b-a" id="bp-p" style="width:100%"></div>
-    <div class="b-r" id="bp-v" style="width:0%"></div>
-  </div>
+  <div class="res-main">
+    <div class="doc-card">
+      <div>
+        <div class="doc-tipo" id="res-tipo">—</div>
+        <div class="doc-titulo" id="res-empresa">—</div>
+        <div class="doc-sub" id="res-sub">—</div>
+      </div>
+    </div>
 
-  <div class="controles">
-    <select id="fil-cat" onchange="filtrar()"><option value="">Todas las categorías</option></select>
-    <select id="fil-etapa" onchange="filtrar()">
-      <option value="">Todas las etapas</option>
-      <option value="operación">Operación</option>
-      <option value="construcción">Construcción</option>
-      <option value="cierre">Cierre</option>
-      <option value="post-cierre">Post-cierre</option>
-    </select>
-    <select id="fil-estado" onchange="filtrar()">
-      <option value="">Todos los estados</option>
-      <option value="pendiente">Pendiente</option>
-      <option value="cumplida">Cumplida</option>
-      <option value="vencida">Vencida</option>
-    </select>
-    <div class="ctrl-info" id="ctrl-info"></div>
-  </div>
+    <div class="metricas">
+      <div class="metrica"><div class="met-label">Total</div><div class="met-val" id="cnt-t">—</div></div>
+      <div class="metrica"><div class="met-label">Pendientes</div><div class="met-val mv-a" id="cnt-p">—</div></div>
+      <div class="metrica"><div class="met-label">Cumplidas</div><div class="met-val mv-v" id="cnt-c">—</div></div>
+      <div class="metrica"><div class="met-label">Vencidas</div><div class="met-val mv-r" id="cnt-v">—</div></div>
+    </div>
 
-  <div class="tabla-wrap">
-    <table>
-      <colgroup><col class="cn"><col class="cd"><col class="cc"><col class="ce"><col class="cf"><col class="cs"><col class="ca"></colgroup>
-      <thead>
-        <tr><th>#</th><th>Obligación</th><th>Categoría</th><th>Etapa</th><th>Frecuencia</th><th>Estado</th><th></th></tr>
-      </thead>
-      <tbody id="tbody"></tbody>
-    </table>
-  </div>
+    <div class="barra-met">
+      <div class="bm-v" id="bp-c" style="width:0%"></div>
+      <div class="bm-a" id="bp-p" style="width:100%"></div>
+      <div class="bm-r" id="bp-v" style="width:0%"></div>
+    </div>
 
-  <div class="paginacion">
-    <span class="pag-info" id="pag-info"></span>
-    <div class="pag-btns" id="pag-btns"></div>
-  </div>
-</main>
+    <div class="controles">
+      <select class="ctrl-select" id="fil-cat" onchange="filtrar()"><option value="">Todas las categorías</option></select>
+      <select class="ctrl-select" id="fil-etapa" onchange="filtrar()">
+        <option value="">Todas las etapas</option>
+        <option value="operación">Operación</option>
+        <option value="construcción">Construcción</option>
+        <option value="cierre">Cierre</option>
+        <option value="post-cierre">Post-cierre</option>
+      </select>
+      <select class="ctrl-select" id="fil-estado" onchange="filtrar()">
+        <option value="">Todos los estados</option>
+        <option value="pendiente">Pendiente</option>
+        <option value="cumplida">Cumplida</option>
+        <option value="vencida">Vencida</option>
+      </select>
+      <div class="ctrl-info" id="ctrl-info"></div>
+    </div>
 
-<!-- PANEL -->
+    <div class="tabla-wrap">
+      <table>
+        <colgroup><col class="cn"><col class="cd"><col class="cc"><col class="ce"><col class="cf"><col class="cs"><col class="ca"></colgroup>
+        <thead>
+          <tr><th>#</th><th>Obligación</th><th>Categoría</th><th>Etapa</th><th>Frecuencia</th><th>Estado</th><th></th></tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="paginacion">
+      <span class="pag-info" id="pag-info"></span>
+      <div class="pag-btns" id="pag-btns"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL DETALLE -->
 <div class="overlay" id="overlay" onclick="cerrar()"></div>
 <div class="panel" id="panel">
   <div class="p-head">
@@ -199,7 +449,7 @@ tr.fila.sel td{background:#f0f7f4}
   </div>
 </div>
 
-<!-- MODAL -->
+<!-- MODAL EXPORTAR -->
 <div class="modal-ov" id="modal" onclick="if(event.target===this)this.classList.remove('vis')">
   <div class="modal">
     <div class="m-t">Exportar obligaciones</div>
@@ -213,15 +463,125 @@ tr.fila.sel td{background:#f0f7f4}
 </div>
 
 <script>
+// ── Datos de demo (obligaciones reales del JSON) ──────────────────
 const CL={monitoreo_efluentes:"Monitoreo de efluentes",monitoreo_aire_emisiones:"Aire y emisiones",manejo_residuos_solidos:"Residuos sólidos",manejo_residuos_peligrosos:"Residuos peligrosos"};
-const RD={"monitoreo_efluentes":[{"descripcion":"Realizar el control de las descargas de efluentes provenientes de las pozas (de sedimentación de lodo) al ambiente, en caso de que dichas descargas sean necesarias.","etapa":"operación","frecuencia":"cuando ocurra","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":"R.M. N° 011-96-EM/VMM","parametros":null}],"monitoreo_aire_emisiones":[{"descripcion":"Proceder, de ser necesario, al riego periódico de los accesos, sobre todo en épocas de secano, para reducir la dispersión de polvo y material particulado.","etapa":"operación","frecuencia":"periódica en épocas de secano","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"polvo y material particulado"},{"descripcion":"Realizar el mantenimiento preventivo de los equipos de combustión y vehículos como medida de control de la emisión de gases de combustión.","etapa":"operación","frecuencia":"periódica","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"emisión de gases de combustión"},{"descripcion":"Revisar periódicamente los equipos, maquinaria de perforación y herramientas para detectar desperfectos que pudieran afectar el ambiente.","etapa":"operación","frecuencia":"periódica","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"emisiones de combustión de hidrocarburos"}],"manejo_residuos_solidos":[{"descripcion":"Almacenar los residuos sólidos inorgánicos en plataformas de almacenamiento temporal para su tratamiento y posterior reutilización, comercialización o disposición final.","etapa":"operación","frecuencia":"continua","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":null},{"descripcion":"Disponer cilindros de color rojo debidamente identificados para el almacenamiento adecuado de residuos sólidos industriales peligrosos.","etapa":"operación","frecuencia":"única vez","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"cilindros color rojo, identificados"},{"descripcion":"Almacenar los residuos sólidos industriales peligrosos en las plataformas de almacenamiento temporal de SMCV SAA.","etapa":"operación","frecuencia":"continua","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":null},{"descripcion":"Realizar el traslado y disposición final de los residuos sólidos industriales peligrosos por una EPS-RS autorizada en un relleno de seguridad aprobado por DIGESA.","etapa":"operación","frecuencia":"cuando ocurra","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"EPS-RS autorizada, relleno de seguridad DIGESA"},{"descripcion":"Asegurar que el manejo de residuos sólidos industriales peligrosos en las zonas de perforación esté a cargo del personal responsable.","etapa":"operación","frecuencia":"continua","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":null},{"descripcion":"Considerar el Reglamento de la Ley General de Residuos Sólidos D.S. N° 057-2004-PCM para el manejo de residuos sólidos industriales peligrosos.","etapa":"operación","frecuencia":"continua","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":"D.S. N° 057-2004-PCM","parametros":null},{"descripcion":"Monitorear y controlar todas las actividades de exploración, incluyendo el manejo de residuos sólidos.","etapa":"operación","frecuencia":"continua","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":null},{"descripcion":"Ubicar un baño químico cerca de las actividades de perforación, con ubicación variable según el avance.","etapa":"operación","frecuencia":"única vez","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"cerca de actividades de perforación"},{"descripcion":"Realizar el mantenimiento y limpieza del baño químico cada 07 días, incluyendo limpieza, desinfección, desodorización, recambio del producto químico y extracción de desechos.","etapa":"operación","frecuencia":"semanal","plazo":"cada 7 días","responsable":"EPS-RS registrada en DIGESA","forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"limpieza, desinfección, desodorización, recambio químico"},{"descripcion":"Contratar a una EPS-RS registrada en DIGESA para el recojo, manejo y disposición final de los desechos de los baños químicos.","etapa":"operación","frecuencia":"cuando ocurra","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"EPS-RS registrada en DIGESA"},{"descripcion":"Colocar cilindros contenedores de residuos sólidos identificados con diferentes colores y letreros en las áreas de perforación.","etapa":"operación","frecuencia":"única vez","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"diferentes colores y letreros"},{"descripcion":"Asegurar que los cilindros contenedores tengan bolsas de plástico en su interior para empacar los residuos en su punto de generación.","etapa":"operación","frecuencia":"continua","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":null},{"descripcion":"Asegurar que el personal encargado del manejo de residuos sólidos esté capacitado para su adecuada disposición.","etapa":"operación","frecuencia":"continua","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":null},{"descripcion":"Disponer los residuos domésticos, industriales y orgánicos de acuerdo al Plan de Manejo de Residuos de SMCV SAA, con entrega al relleno municipal.","etapa":"operación","frecuencia":"continua","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":null},{"descripcion":"Utilizar paños absorbentes de micro fibras sintéticas para la absorción de derrames de hidrocarburos en la poza, antes de abandonar la plataforma.","etapa":"operación","frecuencia":"cuando ocurra","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"paños absorbentes micro fibras"},{"descripcion":"Almacenar los paños absorbentes usados en cilindros de plástico y manejarlos como residuos peligrosos.","etapa":"operación","frecuencia":"cuando ocurra","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"residuos peligrosos"},{"descripcion":"Retirar la geomembrana de la poza cuando esté completamente seca y drenada.","etapa":"cierre","frecuencia":"única vez","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":null},{"descripcion":"Transportar y disponer la geomembrana retirada de la poza de acuerdo a lo establecido en el ítem 7.13.","etapa":"cierre","frecuencia":"única vez","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":null},{"descripcion":"Disponer los lodos de las pozas según el ítem 8.1.3 Medidas para el cierre de las pozas de lodo.","etapa":"cierre","frecuencia":"única vez","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":null},{"descripcion":"No dejar petróleo (D2), gasolina, aceites, grasa y otros derivados del petróleo en el área de exploración.","etapa":"operación","frecuencia":"continua","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":null},{"descripcion":"En caso de derrame, evacuar todo residuo de materiales derivados del petróleo de las zonas de exploración y trasladarlo a los cilindros de acopio temporal.","etapa":"operación","frecuencia":"cuando ocurra","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"cilindros de acopio temporal"},{"descripcion":"Manejar los residuos de materiales derivados del petróleo como residuos industriales peligrosos, de acuerdo al ítem 7.10.","etapa":"operación","frecuencia":"cuando ocurra","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"ítem 7.10"},{"descripcion":"Los perforistas deben tener siempre material absorbente listo y disponible para eventualidades de derrames.","etapa":"operación","frecuencia":"continua","plazo":null,"responsable":"perforistas","forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"material absorbente"},{"descripcion":"En caso de derrame accidental de combustible, absorberlo con paños absorbentes de microfibras sintéticas con la mayor rapidez posible.","etapa":"operación","frecuencia":"cuando ocurra","plazo":"con la mayor rapidez posible","responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"paños absorbentes microfibras"},{"descripcion":"Colocar los paños impregnados con combustible en cilindros y transportarlos según el Plan de manejo del ítem 7.4.","etapa":"operación","frecuencia":"cuando ocurra","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":null},{"descripcion":"Si el combustible tuviera contacto directo con el suelo, remover en su totalidad el suelo contaminado.","etapa":"operación","frecuencia":"cuando ocurra","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"remoción total del suelo"},{"descripcion":"Recoger inmediatamente el suelo afectado por un derrame utilizando palas y picos.","etapa":"operación","frecuencia":"cuando ocurra","plazo":"inmediatamente","responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"palas y picos"},{"descripcion":"Colocar el suelo contaminado sobre una superficie de polietileno de baja densidad de 6 a 8 micras de espesor.","etapa":"operación","frecuencia":"cuando ocurra","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"polietileno baja densidad 6-8 micras"},{"descripcion":"Trasladar el suelo contaminado a la plataforma Landfarm de SMCV SAA para su volatilización natural al aire libre.","etapa":"operación","frecuencia":"cuando ocurra","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"plataforma Landfarm SMCV SAA"},{"descripcion":"Los contratistas serán responsables de la disposición correcta de los suelos o materiales contaminados.","etapa":"operación","frecuencia":"cuando ocurra","plazo":null,"responsable":"contratistas","forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":null},{"descripcion":"Contar siempre con material absorbente listo y disponible en caso de derrame accidental de aceites o hidrocarburos.","etapa":"operación","frecuencia":"continua","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"material absorbente"},{"descripcion":"Mantener plástico debajo de la máquina durante el mantenimiento de abastecimiento de combustible y cambio de aceite.","etapa":"operación","frecuencia":"cuando ocurra","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"plástico protector"},{"descripcion":"Cambiar los revestimientos de plástico debajo de la máquina cuando sea necesario para evitar contacto suelo-máquina.","etapa":"operación","frecuencia":"cuando ocurra","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":null},{"descripcion":"Transportar los revestimientos de plástico usados a las plataformas de almacenamiento temporal de SMCV SAA conforme al ítem 7.4.","etapa":"operación","frecuencia":"cuando ocurra","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"plataformas SMCV SAA"}],"manejo_residuos_peligrosos":[{"descripcion":"Disponer cilindros de color rojo debidamente identificados para residuos sólidos industriales peligrosos.","etapa":"operación","frecuencia":"continua","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"cilindros color rojo"},{"descripcion":"Disponer los residuos sólidos industriales peligrosos en las plataformas de almacenamiento temporal de SMCV SAA.","etapa":"operación","frecuencia":"continua","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"plataformas SMCV SAA"},{"descripcion":"Realizar el traslado y disposición final de residuos peligrosos por una EPS-RS autorizada en relleno de seguridad aprobado por DIGESA.","etapa":"operación","frecuencia":"continua","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":"DIGESA","normativa":null,"parametros":"EPS-RS autorizada, relleno DIGESA"},{"descripcion":"El manejo de residuos peligrosos en zonas de perforación estará a cargo del personal responsable.","etapa":"operación","frecuencia":"continua","plazo":null,"responsable":"personal responsable","forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":null},{"descripcion":"Tener en cuenta el Reglamento D.S. N° 057-2004-PCM para el manejo de residuos sólidos industriales peligrosos.","etapa":"operación","frecuencia":"continua","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":"D.S. N° 057-2004-PCM","parametros":null},{"descripcion":"Absorber el combustible derramado con paños absorbentes de microfibras sintéticas con la mayor rapidez posible.","etapa":"operación","frecuencia":"cuando ocurra","plazo":"con la mayor rapidez posible","responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"paños absorbentes microfibras"},{"descripcion":"Colocar los paños impregnados con combustible en cilindros.","etapa":"operación","frecuencia":"cuando ocurra","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"cilindros"},{"descripcion":"Transportar y tratar los paños impregnados conforme al Plan de manejo del ítem 7.4.","etapa":"operación","frecuencia":"cuando ocurra","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"ítem 7.4"},{"descripcion":"Remover en su totalidad el suelo contaminado si el combustible tuviera contacto directo con el suelo.","etapa":"operación","frecuencia":"cuando ocurra","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"remoción total"},{"descripcion":"Recoger inmediatamente el suelo afectado por derrame utilizando palas y picos.","etapa":"operación","frecuencia":"cuando ocurra","plazo":"inmediatamente","responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"palas y picos"},{"descripcion":"Colocar el suelo contaminado sobre polietileno de baja densidad de 6 a 8 micras de espesor.","etapa":"operación","frecuencia":"cuando ocurra","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"polietileno 6-8 micras"},{"descripcion":"Trasladar el suelo contaminado a la plataforma Landfarm de SMCV SAA para volatilización natural.","etapa":"operación","frecuencia":"cuando ocurra","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"plataforma Landfarm"},{"descripcion":"Asegurar que la poza no presente derrames de hidrocarburos antes de abandonar la plataforma.","etapa":"cierre","frecuencia":"única vez","plazo":"antes de abandonar la plataforma","responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":null},{"descripcion":"Utilizar paños absorbentes de micro fibras sintéticas para absorción de derrames en la poza durante el cierre.","etapa":"cierre","frecuencia":"cuando ocurra","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"paños absorbentes"},{"descripcion":"Almacenar los paños absorbentes usados en cilindros de plástico y manejarlos como residuos peligrosos conforme al ítem 7.10.","etapa":"cierre","frecuencia":"cuando ocurra","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"cilindros plástico, ítem 7.10"},{"descripcion":"Los contratistas son responsables de la disposición correcta de suelos y materiales contaminados.","etapa":"operación","frecuencia":"cuando ocurra","plazo":null,"responsable":"contratistas","forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":null},{"descripcion":"Contar siempre con material absorbente disponible ante derrames accidentales de aceites o hidrocarburos.","etapa":"operación","frecuencia":"continua","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"material absorbente"},{"descripcion":"Mantener plástico debajo de la máquina de perforación durante mantenimiento y cambio de aceite.","etapa":"operación","frecuencia":"cuando ocurra","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"plástico protector"},{"descripcion":"Cambiar los revestimientos de plástico debajo de la máquina cuando sea necesario.","etapa":"operación","frecuencia":"cuando ocurra","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":null},{"descripcion":"Transportar los revestimientos de plástico usados a plataformas SMCV SAA conforme al ítem 7.4.","etapa":"operación","frecuencia":"cuando ocurra","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"plataformas SMCV SAA"},{"descripcion":"Colocar los paños impregnados en cilindros y tratarlos como residuo peligroso.","etapa":"operación","frecuencia":"cuando ocurra","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"residuo peligroso"},{"descripcion":"Evacuar todo residuo de combustibles de zonas de exploración hacia cilindros de acopio temporal.","etapa":"operación","frecuencia":"cuando ocurra","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"cilindros de acopio temporal"},{"descripcion":"Manejar los residuos de petróleo y derivados como residuos industriales peligrosos según ítem 7.10.","etapa":"operación","frecuencia":"cuando ocurra","plazo":null,"responsable":null,"forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"ítem 7.10"},{"descripcion":"Los perforistas deben tener siempre material absorbente disponible para eventualidades de derrames.","etapa":"operación","frecuencia":"continua","plazo":null,"responsable":"perforistas","forma_acreditacion":null,"a_quien_reporta":null,"normativa":null,"parametros":"material absorbente"}]};
+const RD={monitoreo_efluentes:[{descripcion:"Realizar el control de las descargas de efluentes provenientes de las pozas (de sedimentación de lodo) al ambiente, en caso de que dichas descargas sean necesarias.",etapa:"operación",frecuencia:"cuando ocurra",plazo:null,responsable:null,forma_acreditacion:null,a_quien_reporta:null,normativa:"R.M. N° 011-96-EM/VMM",parametros:null}],monitoreo_aire_emisiones:[{descripcion:"Proceder al riego periódico de los accesos, sobre todo en épocas de secano, para reducir la dispersión de polvo y material particulado.",etapa:"operación",frecuencia:"periódica en épocas de secano",plazo:null,responsable:null,forma_acreditacion:null,a_quien_reporta:null,normativa:null,parametros:"polvo y material particulado"},{descripcion:"Realizar el mantenimiento preventivo de los equipos de combustión y vehículos como medida de control de la emisión de gases.",etapa:"operación",frecuencia:"periódica",plazo:null,responsable:null,forma_acreditacion:null,a_quien_reporta:null,normativa:null,parametros:"emisión de gases de combustión"},{descripcion:"Revisar periódicamente los equipos, maquinaria de perforación y herramientas para detectar desperfectos que pudieran afectar el ambiente.",etapa:"operación",frecuencia:"periódica",plazo:null,responsable:null,forma_acreditacion:null,a_quien_reporta:null,normativa:null,parametros:"emisiones de combustión de hidrocarburos"}],manejo_residuos_solidos:[{descripcion:"Almacenar los residuos sólidos inorgánicos en plataformas de almacenamiento temporal para su tratamiento y posterior reutilización, comercialización o disposición final.",etapa:"operación",frecuencia:"continua",plazo:null,responsable:null,forma_acreditacion:null,a_quien_reporta:null,normativa:null,parametros:null},{descripcion:"Disponer cilindros de color rojo debidamente identificados para el almacenamiento adecuado de residuos sólidos industriales peligrosos.",etapa:"operación",frecuencia:"única vez",plazo:null,responsable:null,forma_acreditacion:null,a_quien_reporta:null,normativa:null,parametros:"cilindros color rojo, identificados"},{descripcion:"Almacenar los residuos sólidos industriales peligrosos en las plataformas de almacenamiento temporal de SMCV SAA.",etapa:"operación",frecuencia:"continua",plazo:null,responsable:null,forma_acreditacion:null,a_quien_reporta:null,normativa:null,parametros:null},{descripcion:"Realizar el traslado y disposición final de residuos sólidos industriales peligrosos por una EPS-RS autorizada en relleno de seguridad aprobado por DIGESA.",etapa:"operación",frecuencia:"cuando ocurra",plazo:null,responsable:null,forma_acreditacion:null,a_quien_reporta:null,normativa:null,parametros:"EPS-RS autorizada, relleno de seguridad DIGESA"},{descripcion:"Asegurar que el manejo de residuos sólidos industriales peligrosos en zonas de perforación esté a cargo del personal responsable.",etapa:"operación",frecuencia:"continua",plazo:null,responsable:null,forma_acreditacion:null,a_quien_reporta:null,normativa:null,parametros:null},{descripcion:"Considerar el Reglamento de la Ley General de Residuos Sólidos D.S. N° 057-2004-PCM para el manejo de residuos industriales peligrosos.",etapa:"operación",frecuencia:"continua",plazo:null,responsable:null,forma_acreditacion:null,a_quien_reporta:null,normativa:"D.S. N° 057-2004-PCM",parametros:null},{descripcion:"Ubicar un baño químico cerca de las actividades de perforación, con ubicación variable según el avance.",etapa:"operación",frecuencia:"única vez",plazo:null,responsable:null,forma_acreditacion:null,a_quien_reporta:null,normativa:null,parametros:"cerca de actividades de perforación"},{descripcion:"Realizar el mantenimiento y limpieza del baño químico cada 07 días, incluyendo desinfección, desodorización y recambio del producto químico.",etapa:"operación",frecuencia:"semanal",plazo:"cada 7 días",responsable:"EPS-RS registrada en DIGESA",forma_acreditacion:null,a_quien_reporta:null,normativa:null,parametros:"limpieza, desinfección, desodorización, recambio químico"},{descripcion:"Contratar a una EPS-RS registrada en DIGESA para el recojo y disposición final de los desechos de los baños químicos.",etapa:"operación",frecuencia:"cuando ocurra",plazo:null,responsable:null,forma_acreditacion:null,a_quien_reporta:null,normativa:null,parametros:"EPS-RS registrada en DIGESA"},{descripcion:"Colocar cilindros contenedores de residuos sólidos identificados con diferentes colores y letreros en las áreas de perforación.",etapa:"operación",frecuencia:"única vez",plazo:null,responsable:null,forma_acreditacion:null,a_quien_reporta:null,normativa:null,parametros:"diferentes colores y letreros"},{descripcion:"Asegurar que los cilindros contenedores tengan bolsas de plástico en su interior para empacar los residuos en su punto de generación.",etapa:"operación",frecuencia:"continua",plazo:null,responsable:null,forma_acreditacion:null,a_quien_reporta:null,normativa:null,parametros:null},{descripcion:"Retirar la geomembrana de la poza cuando esté completamente seca y drenada.",etapa:"cierre",frecuencia:"única vez",plazo:null,responsable:null,forma_acreditacion:null,a_quien_reporta:null,normativa:null,parametros:null},{descripcion:"Transportar y disponer la geomembrana retirada de la poza de acuerdo a lo establecido en el ítem 7.13.",etapa:"cierre",frecuencia:"única vez",plazo:null,responsable:null,forma_acreditacion:null,a_quien_reporta:null,normativa:null,parametros:null},{descripcion:"Disponer los lodos de las pozas según el ítem 8.1.3 Medidas para el cierre de las pozas de lodo.",etapa:"cierre",frecuencia:"única vez",plazo:null,responsable:null,forma_acreditacion:null,a_quien_reporta:null,normativa:null,parametros:null},{descripcion:"Los perforistas deben tener siempre material absorbente listo y disponible para eventualidades de derrames.",etapa:"operación",frecuencia:"continua",plazo:null,responsable:"perforistas",forma_acreditacion:null,a_quien_reporta:null,normativa:null,parametros:"material absorbente"},{descripcion:"Recoger inmediatamente el suelo afectado por un derrame utilizando palas y picos.",etapa:"operación",frecuencia:"cuando ocurra",plazo:"inmediatamente",responsable:null,forma_acreditacion:null,a_quien_reporta:null,normativa:null,parametros:"palas y picos"},{descripcion:"Trasladar el suelo contaminado a la plataforma Landfarm de SMCV SAA para su volatilización natural al aire libre.",etapa:"operación",frecuencia:"cuando ocurra",plazo:null,responsable:null,forma_acreditacion:null,a_quien_reporta:null,normativa:null,parametros:"plataforma Landfarm SMCV SAA"},{descripcion:"No dejar petróleo (D2), gasolina, aceites, grasa y otros derivados del petróleo en el área de exploración.",etapa:"operación",frecuencia:"continua",plazo:null,responsable:null,forma_acreditacion:null,a_quien_reporta:null,normativa:null,parametros:null},{descripcion:"Contar siempre con material absorbente listo y disponible en caso de derrame accidental de aceites o hidrocarburos.",etapa:"operación",frecuencia:"continua",plazo:null,responsable:null,forma_acreditacion:null,a_quien_reporta:null,normativa:null,parametros:"material absorbente"}],manejo_residuos_peligrosos:[{descripcion:"Disponer cilindros de color rojo debidamente identificados para residuos sólidos industriales peligrosos.",etapa:"operación",frecuencia:"continua",plazo:null,responsable:null,forma_acreditacion:null,a_quien_reporta:null,normativa:null,parametros:"cilindros color rojo"},{descripcion:"Realizar el traslado y disposición final de residuos peligrosos por una EPS-RS autorizada en relleno de seguridad aprobado por DIGESA.",etapa:"operación",frecuencia:"continua",plazo:null,responsable:null,forma_acreditacion:null,a_quien_reporta:"DIGESA",normativa:null,parametros:"EPS-RS autorizada, relleno DIGESA"},{descripcion:"El manejo de residuos peligrosos en zonas de perforación estará a cargo del personal responsable.",etapa:"operación",frecuencia:"continua",plazo:null,responsable:"personal responsable",forma_acreditacion:null,a_quien_reporta:null,normativa:null,parametros:null},{descripcion:"Tener en cuenta el Reglamento D.S. N° 057-2004-PCM para el manejo de residuos sólidos industriales peligrosos.",etapa:"operación",frecuencia:"continua",plazo:null,responsable:null,forma_acreditacion:null,a_quien_reporta:null,normativa:"D.S. N° 057-2004-PCM",parametros:null},{descripcion:"Absorber el combustible derramado con paños absorbentes de microfibras sintéticas con la mayor rapidez posible.",etapa:"operación",frecuencia:"cuando ocurra",plazo:"con la mayor rapidez posible",responsable:null,forma_acreditacion:null,a_quien_reporta:null,normativa:null,parametros:"paños absorbentes microfibras"},{descripcion:"Asegurar que la poza no presente derrames de hidrocarburos antes de abandonar la plataforma.",etapa:"cierre",frecuencia:"única vez",plazo:"antes de abandonar la plataforma",responsable:null,forma_acreditacion:null,a_quien_reporta:null,normativa:null,parametros:null},{descripcion:"Almacenar los paños absorbentes usados en cilindros de plástico y manejarlos como residuos peligrosos conforme al ítem 7.10.",etapa:"cierre",frecuencia:"cuando ocurra",plazo:null,responsable:null,forma_acreditacion:null,a_quien_reporta:null,normativa:null,parametros:"cilindros plástico, ítem 7.10"},{descripcion:"Los contratistas son responsables de la disposición correcta de suelos y materiales contaminados.",etapa:"operación",frecuencia:"cuando ocurra",plazo:null,responsable:"contratistas",forma_acreditacion:null,a_quien_reporta:null,normativa:null,parametros:null},{descripcion:"Evacuar todo residuo de combustibles de zonas de exploración hacia cilindros de acopio temporal.",etapa:"operación",frecuencia:"cuando ocurra",plazo:null,responsable:null,forma_acreditacion:null,a_quien_reporta:null,normativa:null,parametros:"cilindros de acopio temporal"}]};
 
-let DATOS=[];
-Object.entries(RD).forEach(([cat,items])=>items.forEach(item=>DATOS.push({...item,cat:CL[cat]||cat,estado:'pendiente'})));
-
+// ── Estado global ────────────────────────────────────────────────
+let DATOS=[], filtrados=[], pagina=1, pidx=null;
 const PAGE=12;
-let pagina=1,filtrados=[...DATOS],pidx=null;
+let ctxEmpresa='', ctxTipo='', ctxSector='', ctxArchivo='';
 
+// ── Pantallas ─────────────────────────────────────────────────────
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ── PANTALLA 1: lógica de carga ───────────────────────────────────
+function onFile(file){
+  if(!file)return;
+  document.getElementById('drop-nombre').textContent=file.name;
+  document.getElementById('drop-archivo').classList.add('visible');
+  ctxArchivo=file.name;
+  checkForm();
+}
+function quitarArchivo(){
+  document.getElementById('inp-file').value='';
+  document.getElementById('drop-archivo').classList.remove('visible');
+  ctxArchivo='';
+  checkForm();
+}
+function checkForm(){
+  const ok=ctxArchivo && document.getElementById('inp-empresa').value.trim() && document.getElementById('inp-tipo').value && document.getElementById('inp-sector').value;
+  document.getElementById('btn-procesar').disabled=!ok;
+}
+document.getElementById('inp-empresa').addEventListener('input',checkForm);
+document.getElementById('inp-tipo').addEventListener('change',checkForm);
+document.getElementById('inp-sector').addEventListener('change',checkForm);
+
+const dz=document.getElementById('drop-zone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag');if(e.dataTransfer.files[0])onFile(e.dataTransfer.files[0]);});
+
+// ── PANTALLA 2: animación de procesamiento ────────────────────────
+function iniciarProceso(){
+  ctxEmpresa=document.getElementById('inp-empresa').value.trim();
+  ctxTipo=document.getElementById('inp-tipo').value;
+  ctxSector=document.getElementById('inp-sector').value;
+  document.getElementById('nav-badge').textContent=ctxSector;
+  document.getElementById('proc-nombre').textContent=ctxArchivo;
+  document.getElementById('proc-meta').textContent=`${ctxTipo} · ${ctxEmpresa} · ${ctxSector}`;
+  show('s-proc');
+  animarProceso();
+}
+
+function animarProceso(){
+  const pasos=[0,1,2,3];
+  const duraciones=[2500,2000,3500,1500];
+  const barra=document.getElementById('barra-proc');
+  const porcentajes=[25,50,85,100];
+  let actual=0;
+
+  function avanzar(){
+    if(actual>0){
+      document.getElementById('paso-'+(actual-1)).classList.remove('activo');
+      document.getElementById('paso-'+(actual-1)).classList.add('done');
+      document.getElementById('paso-'+(actual-1)).querySelector('.paso-proc-icono').textContent='✓';
+    }
+    if(actual<pasos.length){
+      document.getElementById('paso-'+actual).classList.add('activo');
+      barra.style.width=porcentajes[actual]+'%';
+      setTimeout(()=>{actual++;avanzar();},duraciones[actual]);
+    } else {
+      setTimeout(mostrarResultado,600);
+    }
+  }
+  avanzar();
+}
+
+// ── PANTALLA 3: resultado ─────────────────────────────────────────
+function mostrarResultado(){
+  // Carga datos
+  DATOS=[];
+  Object.entries(RD).forEach(([cat,items])=>items.forEach(item=>DATOS.push({...item,cat:CL[cat]||cat,estado:'pendiente'})));
+  filtrados=[...DATOS];
+
+  // Rellena cabecera
+  document.getElementById('res-tipo').textContent=ctxTipo;
+  document.getElementById('res-empresa').textContent=ctxEmpresa||'Sociedad Minera Cerro Verde S.A.A.';
+  document.getElementById('res-nav-titulo').textContent=ctxTipo+' · '+ctxSector;
+  document.getElementById('res-sub').textContent=`${ctxSector} · ${ctxArchivo} · Procesado ${new Date().toLocaleDateString('es-PE')} · ${DATOS.length} obligaciones extraídas`;
+
+  // Categorías en filtro
+  const cats=[...new Set(DATOS.map(d=>d.cat))].sort();
+  const sel=document.getElementById('fil-cat');
+  sel.innerHTML='<option value="">Todas las categorías</option>';
+  cats.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+
+  contadores();
+  render();
+  show('s-result');
+}
+
+function volverInicio(){
+  cerrar();
+  show('s-upload');
+  document.getElementById('inp-empresa').value='';
+  document.getElementById('inp-tipo').value='';
+  document.getElementById('inp-sector').value='';
+  quitarArchivo();
+  // Reinicia pasos
+  for(let i=0;i<4;i++){
+    const p=document.getElementById('paso-'+i);
+    p.classList.remove('activo','done');
+    p.querySelector('.paso-proc-icono').textContent=i+1;
+  }
+  document.getElementById('barra-proc').style.width='0%';
+}
+
+// ── Tabla y panel ─────────────────────────────────────────────────
 function V(val){return val?`<span class="cv">${val}</span>`:`<span class="cn2">No especificado</span>`}
 
 function contadores(){
@@ -329,15 +689,9 @@ function exportCSV(){
   const rows=[cab.join(',')];
   DATOS.forEach(d=>rows.push(cols.map(c=>`"${(d[c]||'').toString().replace(/"/g,'""')}"`).join(',')));
   const blob=new Blob([rows.join('\n')],{type:'text/csv;charset=utf-8;'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='obligaciones_querendosa.csv';a.click();
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='obligaciones.csv';a.click();
   document.getElementById('modal').classList.remove('vis');
 }
-
-const cats=[...new Set(DATOS.map(d=>d.cat))].sort();
-const sel=document.getElementById('fil-cat');
-cats.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
-contadores();
-render();
 </script>
 </body>
 </html>
