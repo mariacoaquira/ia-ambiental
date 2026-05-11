@@ -500,28 +500,28 @@ tr:hover td { background: var(--surface2); }
         <div class="grid-3 mb-20">
           <div class="card card-sm" style="border-left:3px solid var(--accent)">
             <div class="text-xs text-muted mb-4">Total obligaciones</div>
-            <div style="font-size:22px;font-weight:600">118</div>
-            <div class="text-xs text-muted mt-4">10 categorías</div>
+            <div id="stat-total" style="font-size:22px;font-weight:600">—</div>
+            <div class="text-xs text-muted mt-4" id="stat-cats">— categorías</div>
           </div>
           <div class="card card-sm" style="border-left:3px solid var(--amber)">
             <div class="text-xs text-muted mb-4">Pendientes</div>
-            <div style="font-size:22px;font-weight:600;color:var(--amber)">47</div>
-            <div class="progress-bar mt-8"><div class="progress-fill" style="width:40%;background:var(--amber)"></div></div>
+            <div id="stat-pendientes" style="font-size:22px;font-weight:600;color:var(--amber)">—</div>
+            <div class="progress-bar mt-8"><div class="progress-fill" id="stat-pend-bar" style="width:0%;background:var(--amber)"></div></div>
           </div>
           <div class="card card-sm" style="border-left:3px solid var(--accent2)">
             <div class="text-xs text-muted mb-4">Cumplidas</div>
-            <div style="font-size:22px;font-weight:600;color:var(--accent)">71</div>
-            <div class="progress-bar mt-8"><div class="progress-fill" style="width:60%"></div></div>
+            <div id="stat-cumplidas" style="font-size:22px;font-weight:600;color:var(--accent)">0</div>
+            <div class="progress-bar mt-8"><div class="progress-fill" id="stat-cum-bar" style="width:0%"></div></div>
           </div>
         </div>
 
         <!-- Filtros -->
         <div class="flex gap-8 mb-16 items-center">
-          <div class="chip active">Todas</div>
-          <div class="chip">Pendientes</div>
-          <div class="chip">Cumplidas</div>
-          <div class="chip">IGA</div>
-          <div class="chip">Normativa</div>
+          <div class="chip active" onclick="setFiltro(this, 'todas', 'todas')">Todas</div>
+          <div class="chip" onclick="setFiltro(this, 'pendiente', 'todas')">Pendientes</div>
+          <div class="chip" onclick="setFiltro(this, 'cumplida', 'todas')">Cumplidas</div>
+          <div class="chip" onclick="setFiltro(this, 'todas', 'IGA')">IGA</div>
+          <div class="chip" onclick="setFiltro(this, 'todas', 'Normativa')">Normativa</div>
           <div style="margin-left:auto" class="flex gap-8">
             <select id="filtro-uf" onchange="renderCats()" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit">
               <option value="todas">Todas las UF</option>
@@ -1036,19 +1036,44 @@ function goTo(screen) {
 }
 
 // ── CATEGORÍAS ──
-// ── CATEGORÍAS ──
+let TODAS_OBLIGS = {}; // cache global
+let filtroEstado = 'todas';
+let filtroFuente = 'todas';
+
 async function renderCats() {
   const container = document.getElementById('cat-list');
   container.innerHTML = '<p class="text-muted text-sm" style="padding:20px">Cargando obligaciones...</p>';
 
   try {
-    const res  = await fetch(`${API_URL}/api/obligaciones`);
-    const data = await res.json();
-    const cats = data.por_categoria || {};
+    // Solo llama a la API si no tenemos datos aún
+    if (Object.keys(TODAS_OBLIGS).length === 0) {
+      const res  = await fetch(`${API_URL}/api/obligaciones`);
+      const data = await res.json();
+      TODAS_OBLIGS = data.por_categoria || {};
+
+      // Actualizar stats
+      const total = Object.values(TODAS_OBLIGS).reduce((s, o) => s + o.length, 0);
+      const cats  = Object.keys(TODAS_OBLIGS).length;
+      document.getElementById('stat-total').textContent = total;
+      document.getElementById('stat-cats').textContent  = cats + ' categorías';
+      // Por ahora todas pendientes (sin módulo de seguimiento)
+      document.getElementById('stat-pendientes').textContent = total;
+      document.getElementById('stat-cumplidas').textContent  = 0;
+      document.getElementById('stat-pend-bar').style.width   = '100%';
+      document.getElementById('stat-cum-bar').style.width    = '0%';
+    }
 
     container.innerHTML = '';
 
-    Object.entries(cats).forEach(([cat, obligs]) => {
+    Object.entries(TODAS_OBLIGS).forEach(([cat, todasObligs]) => {
+      // Aplicar filtros
+      let obligs = todasObligs;
+      if (filtroFuente === 'IGA')       obligs = obligs.filter(o => !o.normativa);
+      if (filtroFuente === 'Normativa') obligs = obligs.filter(o => o.normativa);
+      // filtroEstado pendiente/cumplida se aplicará cuando haya módulo de seguimiento
+
+      if (obligs.length === 0) return; // no mostrar categoría vacía
+
       const label = cat.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
       const open  = currentCats[cat];
       const section = document.createElement('div');
@@ -1074,7 +1099,7 @@ async function renderCats() {
             </thead>
             <tbody>
               ${obligs.map((o, i) => `
-                <tr style="cursor:pointer" onclick="goTo('detalle')">
+                <tr style="cursor:pointer" onclick="verDetalle(${JSON.stringify(o).replace(/'/g, '&#39;')})">
                   <td class="td-mono">${String(i+1).padStart(3,'0')}</td>
                   <td style="max-width:320px">${o.descripcion || ''}</td>
                   <td><span class="badge badge-gray">${o.etapa || '—'}</span></td>
@@ -1181,6 +1206,41 @@ function goToConsolidada(ufName, igaName) {
     }
     renderCats();
   }, 50);
+}
+
+// ── DETALLE DESDE DATOS REALES ──
+function verDetalle(o) {
+  // Rellenar campos del detalle con datos de la obligación
+  document.querySelector('#screen-detalle .text-xs.text-muted').textContent =
+    (o.plan || 'Plan de Manejo Ambiental');
+  document.querySelector('#screen-detalle [style*="font-size:16px"]').textContent =
+    o.descripcion || '';
+
+  // Campos del grid
+  const campos = document.querySelectorAll('#screen-detalle .detalle-value');
+  if (campos[0]) campos[0].textContent = o.plan || '—';
+  if (campos[1]) campos[1].textContent = o.etapa || '—';
+  if (campos[2]) campos[2].textContent = o.frecuencia || '—';
+  if (campos[3]) campos[3].textContent = o.componente || '—';
+  if (campos[4]) campos[4].textContent = o.normativa ? 'Normativa — ' + o.normativa : 'IGA — DIA La Querendosa';
+  if (campos[5]) campos[5].textContent = o.normativa || 'No especificada';
+  if (campos[6]) campos[6].textContent = o.parametros || '—';
+  if (campos[7]) campos[7].textContent = o.responsable || 'No especificado';
+
+  // Evidencia requerida
+  const evBox = document.querySelector('#screen-detalle .detalle-value.mt-4');
+  if (evBox) evBox.textContent = o.evidencia_cumplimiento || '—';
+
+  goTo('detalle');
+}
+
+// ── CHIPS DE FILTRO ──
+function setFiltro(chip, estado, fuente) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  filtroEstado = estado || 'todas';
+  filtroFuente = fuente || 'todas';
+  renderCats();
 }
 
 function marcarCumplida() {
