@@ -1009,6 +1009,9 @@ const OBLIGACIONES = {
   ]
 };
 
+// ── API ──
+const API_URL = 'https://asistente-ambiental-api-608628180425.us-central1.run.app';
+
 // ── ESTADO ──
 let currentStep = 2;
 let currentCats = {};
@@ -1033,50 +1036,63 @@ function goTo(screen) {
 }
 
 // ── CATEGORÍAS ──
-function renderCats() {
+// ── CATEGORÍAS ──
+async function renderCats() {
   const container = document.getElementById('cat-list');
-  container.innerHTML = '';
-  Object.entries(OBLIGACIONES).forEach(([cat, obligs]) => {
-    const cumplidas = obligs.filter(o => o.estado === 'cumplida').length;
-    const open = currentCats[cat];
-    const section = document.createElement('div');
-    section.className = 'cat-section';
-    section.innerHTML = `
-      <div class="cat-header" onclick="toggleCat('${cat}', this)">
-        <div class="cat-icon"></div>
-        <div class="cat-name">${cat}</div>
-        <div class="cat-count">${cumplidas}/${obligs.length} cumplidas</div>
-        <div class="cat-chevron ${open?'open':''}">›</div>
-      </div>
-      <div class="cat-table ${open?'open':''}">
-        <table>
-          <thead>
-            <tr>
-              <th>N°</th>
-              <th>Obligación</th>
-              <th>Etapa</th>
-              <th>Frecuencia</th>
-              <th>Fuente</th>
-              <th>Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${obligs.map(o => `
-              <tr style="cursor:pointer" onclick="goTo('detalle')">
-                <td class="td-mono">${o.id}</td>
-                <td style="max-width:320px">${o.desc}</td>
-                <td><span class="badge badge-gray">${o.etapa}</span></td>
-                <td class="text-muted" style="font-size:12px">${o.frecuencia}</td>
-                <td><span class="badge ${o.fuente==='IGA'?'badge-blue':'badge-amber'}">${o.fuente}</span></td>
-                <td><span class="badge ${o.estado==='cumplida'?'badge-green':'badge-amber'}">
-                  <span class="dot"></span>${o.estado==='cumplida'?'Cumplida':'Pendiente'}
-                </span></td>
-              </tr>`).join('')}
-          </tbody>
-        </table>
-      </div>`;
-    container.appendChild(section);
-  });
+  container.innerHTML = '<p class="text-muted text-sm" style="padding:20px">Cargando obligaciones...</p>';
+
+  try {
+    const res  = await fetch(`${API_URL}/api/obligaciones`);
+    const data = await res.json();
+    const cats = data.por_categoria || {};
+
+    container.innerHTML = '';
+
+    Object.entries(cats).forEach(([cat, obligs]) => {
+      const label = cat.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      const open  = currentCats[cat];
+      const section = document.createElement('div');
+      section.className = 'cat-section';
+      section.innerHTML = `
+        <div class="cat-header" onclick="toggleCat('${cat}', this)">
+          <div class="cat-icon"></div>
+          <div class="cat-name">${label}</div>
+          <div class="cat-count">${obligs.length} obligaciones</div>
+          <div class="cat-chevron ${open ? 'open' : ''}">›</div>
+        </div>
+        <div class="cat-table ${open ? 'open' : ''}">
+          <table>
+            <thead>
+              <tr>
+                <th>N°</th>
+                <th>Obligación</th>
+                <th>Etapa</th>
+                <th>Frecuencia</th>
+                <th>Fuente</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${obligs.map((o, i) => `
+                <tr style="cursor:pointer" onclick="goTo('detalle')">
+                  <td class="td-mono">${String(i+1).padStart(3,'0')}</td>
+                  <td style="max-width:320px">${o.descripcion || ''}</td>
+                  <td><span class="badge badge-gray">${o.etapa || '—'}</span></td>
+                  <td class="text-muted" style="font-size:12px">${o.frecuencia || '—'}</td>
+                  <td><span class="badge ${o.normativa ? 'badge-amber' : 'badge-blue'}">${o.normativa ? 'Normativa' : 'IGA'}</span></td>
+                  <td><span class="badge badge-amber"><span class="dot"></span>Pendiente</span></td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>`;
+      container.appendChild(section);
+    });
+
+  } catch (err) {
+    container.innerHTML = `<div class="card" style="color:var(--red);padding:20px">
+      Error conectando al backend. Detalle: ${err.message}
+    </div>`;
+  }
 }
 
 function toggleCat(cat, header) {
