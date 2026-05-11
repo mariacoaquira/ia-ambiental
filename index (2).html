@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asistente Ambiental</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f4f3ef;
+  --surface: #ffffff;
+  --surface2: #f9f8f5;
+  --border: #e2e0da;
+  --border2: #ccc9c0;
+  --text: #1a1916;
+  --text2: #6b6860;
+  --text3: #9c9a93;
+  --accent: #1a5c3a;
+  --accent2: #2d7a52;
+  --accent-light: #e8f2ec;
+  --accent-border: #b8d9c6;
+  --amber: #c47f0a;
+  --amber-light: #fef3dc;
+  --red: #b83232;
+  --red-light: #fdeaea;
+  --blue: #1a3d6b;
+  --blue-light: #e8eef7;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow: 0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+  --shadow-lg: 0 2px 8px rgba(0,0,0,0.08), 0 8px 32px rgba(0,0,0,0.08);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; }
+
+/* LAYOUT */
+.app { display: flex; min-height: 100vh; }
+.sidebar { width: 220px; background: var(--accent); color: #fff; display: flex; flex-direction: column; padding: 0; flex-shrink: 0; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
+.sidebar-logo { padding: 24px 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.12); }
+.sidebar-logo h1 { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.9); }
+.sidebar-logo p { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+.sidebar-nav { flex: 1; padding: 16px 0; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 20px; font-size: 13px; color: rgba(255,255,255,0.65); cursor: pointer; transition: all 0.15s; border-left: 3px solid transparent; }
+.nav-item:hover { color: #fff; background: rgba(255,255,255,0.08); }
+.nav-item.active { color: #fff; background: rgba(255,255,255,0.12); border-left-color: #6fcb97; }
+.nav-icon { width: 16px; text-align: center; font-size: 14px; }
+.sidebar-footer { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.12); font-size: 12px; color: rgba(255,255,255,0.45); }
+.sidebar-user { display: flex; align-items: center; gap: 10px; }
+.avatar { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #fff; }
+
+.main { margin-left: 220px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+.topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 32px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+.topbar-title { font-size: 15px; font-weight: 600; }
+.topbar-actions { display: flex; gap: 10px; align-items: center; }
+.content { padding: 28px 32px; flex: 1; }
+
+/* SCREENS */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* LOGIN */
+.login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--bg); }
+.login-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 48px 44px; width: 380px; box-shadow: var(--shadow-lg); }
+.login-logo { text-align: center; margin-bottom: 32px; }
+.login-logo h2 { font-size: 18px; font-weight: 600; color: var(--accent); }
+.login-logo p { font-size: 12px; color: var(--text3); margin-top: 4px; letter-spacing: 0.05em; text-transform: uppercase; }
+.login-dot { width: 44px; height: 44px; background: var(--accent); border-radius: 12px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; }
+.login-dot span { color: #fff; font-size: 20px; }
+
+/* FORMS */
+.field { margin-bottom: 16px; }
+.field label { display: block; font-size: 12px; font-weight: 500; color: var(--text2); margin-bottom: 6px; letter-spacing: 0.02em; }
+.field input, .field select, .field textarea { width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; font-family: inherit; background: var(--surface); color: var(--text); transition: border 0.15s; outline: none; }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent2); box-shadow: 0 0 0 3px rgba(45,122,82,0.1); }
+.field textarea { resize: vertical; min-height: 80px; }
+
+/* BUTTONS */
+.btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; border: 1px solid transparent; font-family: inherit; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent2); }
+.btn-secondary { background: var(--surface); color: var(--text); border-color: var(--border); }
+.btn-secondary:hover { background: var(--surface2); border-color: var(--border2); }
+.btn-ghost { background: none; color: var(--text2); border: none; padding: 8px 12px; }
+.btn-ghost:hover { background: var(--surface2); color: var(--text); }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-danger { background: var(--red-light); color: var(--red); border-color: transparent; }
+.btn-danger:hover { background: #fbd5d5; }
+.btn-full { width: 100%; justify-content: center; }
+
+/* BADGES */
+.badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 99px; font-size: 11px; font-weight: 500; }
+.badge-green { background: var(--accent-light); color: var(--accent); }
+.badge-amber { background: var(--amber-light); color: var(--amber); }
+.badge-red { background: var(--red-light); color: var(--red); }
+.badge-blue { background: var(--blue-light); color: var(--blue); }
+.badge-gray { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; display: inline-block; }
+
+/* CARDS */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; }
+.card-sm { padding: 14px 18px; }
+
+/* DASHBOARD */
+.page-header { margin-bottom: 24px; }
+.page-header h2 { font-size: 20px; font-weight: 600; }
+.page-header p { color: var(--text2); margin-top: 4px; font-size: 13px; }
+
+.empresa-header { background: var(--accent); color: #fff; border-radius: var(--radius); padding: 24px 28px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; }
+.empresa-header h3 { font-size: 18px; font-weight: 600; }
+.empresa-header p { font-size: 13px; opacity: 0.7; margin-top: 3px; }
+.empresa-stats { display: flex; gap: 32px; }
+.stat { text-align: center; }
+.stat-n { font-size: 24px; font-weight: 600; }
+.stat-l { font-size: 11px; opacity: 0.65; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+
+/* UNIDADES GRID */
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.section-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text2); }
+.unidades-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.unidad-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; cursor: pointer; transition: all 0.2s; }
+.unidad-card:hover { border-color: var(--accent-border); box-shadow: var(--shadow); transform: translateY(-1px); }
+.unidad-card.selected { border-color: var(--accent2); box-shadow: 0 0 0 3px rgba(45,122,82,0.12); }
+.unidad-name { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+.unidad-meta { font-size: 12px; color: var(--text2); display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.unidad-iga-count { display: flex; align-items: center; gap: 6px; }
+.iga-pill { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; background: var(--accent-light); color: var(--accent); font-family: 'DM Mono', monospace; }
+
+/* TABLE */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+thead { background: var(--surface2); }
+th { padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); white-space: nowrap; }
+td { padding: 12px 14px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--surface2); }
+.td-mono { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text2); }
+
+/* STEPPER */
+.stepper { display: flex; align-items: center; gap: 0; margin-bottom: 32px; }
+.step { display: flex; align-items: center; gap: 10px; }
+.step-num { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; border: 2px solid var(--border); color: var(--text3); background: var(--surface); flex-shrink: 0; transition: all 0.2s; }
+.step.done .step-num { background: var(--accent); border-color: var(--accent); color: #fff; }
+.step.active .step-num { border-color: var(--accent2); color: var(--accent); background: var(--accent-light); }
+.step-label { font-size: 12px; font-weight: 500; color: var(--text3); white-space: nowrap; }
+.step.done .step-label, .step.active .step-label { color: var(--text); }
+.step-line { flex: 1; height: 1px; background: var(--border); margin: 0 8px; min-width: 20px; }
+.step.done + .step-line { background: var(--accent); }
+
+/* IGA PANEL */
+.iga-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.iga-panel-header { padding: 14px 20px; background: var(--surface2); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.iga-panel-title { font-size: 13px; font-weight: 600; }
+.iga-list { }
+.iga-row { display: flex; align-items: center; gap: 14px; padding: 14px 20px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.15s; }
+.iga-row:last-child { border-bottom: none; }
+.iga-row:hover { background: var(--surface2); }
+.iga-tipo { width: 52px; text-align: center; padding: 4px 0; border-radius: 6px; font-size: 11px; font-weight: 700; font-family: 'DM Mono', monospace; background: var(--blue-light); color: var(--blue); flex-shrink: 0; }
+.iga-info { flex: 1; }
+.iga-nombre { font-size: 13px; font-weight: 500; }
+.iga-fecha { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.iga-obligs { font-size: 12px; color: var(--text2); flex-shrink: 0; }
+
+/* PREVIEW OBLIGACIONES */
+.preview-table { }
+.preview-row { display: flex; align-items: flex-start; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+.preview-row:last-child { border-bottom: none; }
+.preview-check { flex-shrink: 0; margin-top: 2px; }
+.preview-check input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+.preview-body { flex: 1; }
+.preview-desc { font-size: 13px; line-height: 1.5; margin-bottom: 6px; }
+.preview-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.preview-tag { font-size: 11px; padding: 2px 8px; border-radius: 4px; background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+.update-banner { background: var(--amber-light); border: 1px solid #f0d090; border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 8px; font-size: 12px; color: var(--amber); display: flex; align-items: center; gap: 8px; }
+
+/* VISTA CONSOLIDADA */
+.cat-section { margin-bottom: 24px; }
+.cat-header { display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; transition: background 0.15s; margin-bottom: 0; }
+.cat-header:hover { background: #eeecea; }
+.cat-icon { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+.cat-name { font-size: 13px; font-weight: 600; flex: 1; }
+.cat-count { font-size: 12px; color: var(--text2); }
+.cat-chevron { font-size: 12px; color: var(--text3); transition: transform 0.2s; }
+.cat-chevron.open { transform: rotate(90deg); }
+.cat-table { border: 1px solid var(--border); border-top: none; border-radius: 0 0 var(--radius-sm) var(--radius-sm); overflow: hidden; display: none; }
+.cat-table.open { display: block; }
+
+/* DETALLE OBLIGACIÓN */
+.detalle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.detalle-field { }
+.detalle-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px; }
+.detalle-value { font-size: 13px; color: var(--text); }
+.evidencia-box { border: 2px dashed var(--border2); border-radius: var(--radius); padding: 28px; text-align: center; cursor: pointer; transition: all 0.15s; color: var(--text2); }
+.evidencia-box:hover { border-color: var(--accent2); color: var(--accent); background: var(--accent-light); }
+.evidencia-icon { font-size: 28px; margin-bottom: 8px; }
+.evidencia-text { font-size: 13px; font-weight: 500; }
+.evidencia-sub { font-size: 12px; margin-top: 4px; opacity: 0.7; }
+
+/* ALERTAS */
+.alert-card { display: flex; align-items: center; gap: 16px; padding: 16px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 10px; transition: all 0.15s; cursor: pointer; }
+.alert-card:hover { border-color: var(--accent-border); box-shadow: var(--shadow); }
+.alert-card.urgente { border-left: 3px solid var(--red); }
+.alert-card.proximo { border-left: 3px solid var(--amber); }
+.alert-card.ok { border-left: 3px solid var(--accent); }
+.alert-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.alert-icon.urgente { background: var(--red-light); }
+.alert-icon.proximo { background: var(--amber-light); }
+.alert-icon.ok { background: var(--accent-light); }
+.alert-info { flex: 1; }
+.alert-title { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+.alert-meta { font-size: 12px; color: var(--text2); }
+.alert-badge { flex-shrink: 0; }
+
+/* MODAL */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 200; display: none; align-items: center; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--surface); border-radius: 14px; width: 680px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg); }
+.modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--surface); z-index: 10; }
+.modal-title { font-size: 16px; font-weight: 600; }
+.modal-body { padding: 24px; }
+.modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; position: sticky; bottom: 0; background: var(--surface); }
+.close-btn { background: none; border: none; cursor: pointer; color: var(--text2); font-size: 18px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px; }
+.close-btn:hover { background: var(--surface2); }
+
+/* TABS */
+.tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+.tab { padding: 10px 18px; font-size: 13px; font-weight: 500; color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.15s; }
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* PROGRESS */
+.progress-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s; }
+
+/* CHIP ROW */
+.chip-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.chip { padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); font-size: 12px; cursor: pointer; transition: all 0.15s; color: var(--text2); background: var(--surface); }
+.chip:hover { border-color: var(--accent2); color: var(--accent); }
+.chip.active { background: var(--accent-light); border-color: var(--accent-border); color: var(--accent); font-weight: 500; }
+
+/* DIVIDER */
+.divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+/* SEARCH */
+.search-bar { display: flex; align-items: center; gap: 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 12px; }
+.search-bar input { background: none; border: none; outline: none; font-family: inherit; font-size: 13px; color: var(--text); flex: 1; }
+.search-icon { color: var(--text3); font-size: 14px; }
+
+/* HISTORIAL */
+.historial-item { display: flex; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.historial-item:last-child { border-bottom: none; }
+.historial-dot-wrap { display: flex; flex-direction: column; align-items: center; }
+.historial-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent-border); border: 2px solid var(--surface); margin-top: 4px; }
+.historial-line { flex: 1; width: 1px; background: var(--border); margin-top: 4px; }
+.historial-content { flex: 1; padding-bottom: 4px; }
+.historial-label { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+.historial-date { font-size: 11px; color: var(--text3); }
+
+/* PERIODIC BADGE */
+.periodic-info { display: flex; align-items: center; gap: 8px; background: var(--blue-light); border: 1px solid #c5d8ef; border-radius: var(--radius-sm); padding: 10px 14px; font-size: 12px; color: var(--blue); }
+
+/* UTILS */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-8 { gap: 8px; }
+.gap-12 { gap: 12px; }
+.gap-16 { gap: 16px; }
+.gap-20 { gap: 20px; }
+.mt-4 { margin-top: 4px; }
+.mt-8 { margin-top: 8px; }
+.mt-12 { margin-top: 12px; }
+.mt-16 { margin-top: 16px; }
+.mt-20 { margin-top: 20px; }
+.mb-8 { margin-bottom: 8px; }
+.mb-12 { margin-bottom: 12px; }
+.mb-16 { margin-bottom: 16px; }
+.mb-20 { margin-bottom: 20px; }
+.text-sm { font-size: 12px; }
+.text-xs { font-size: 11px; }
+.text-muted { color: var(--text2); }
+.text-accent { color: var(--accent); }
+.font-mono { font-family: 'DM Mono', monospace; }
+.font-600 { font-weight: 600; }
+.w-full { width: 100%; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+</style>
+</head>
+<body>
+
+<!-- ============ SCREEN 1: LOGIN ============ -->
+<div id="screen-login" class="screen active">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="login-dot"><span>🌿</span></div>
+        <h2>Asistente Ambiental</h2>
+        <p>Gestión de obligaciones IGA</p>
+      </div>
+      <div class="field">
+        <label>Usuario</label>
+        <input type="text" placeholder="usuario@empresa.com" value="jperez@cmsgr.au.pe">
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input type="password" placeholder="••••••••" value="••••••••">
+      </div>
+      <button class="btn btn-primary btn-full mt-16" onclick="goTo('dashboard')" style="padding:12px;">
+        Ingresar →
+      </button>
+      <p class="text-xs text-muted mt-12" style="text-align:center">¿Problemas para acceder? Contacta al administrador</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APP SHELL ============ -->
+<div id="app-shell" style="display:none">
+  <div class="app">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <h1>Asist. Ambiental</h1>
+        <p>CMS Grau · Panel</p>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-item active" onclick="goTo('dashboard')">
+          <span class="nav-icon">⊞</span> Dashboard
+        </div>
+        <div class="nav-item" onclick="goTo('consolidada')">
+          <span class="nav-icon">≡</span> Obligaciones
+        </div>
+        <div class="nav-item" onclick="goTo('alertas')">
+          <span class="nav-icon">◎</span> Alertas
+          <span class="badge badge-red" style="margin-left:auto;font-size:10px;padding:2px 7px;">3</span>
+        </div>
+        <div class="nav-item" style="margin-top:auto">
+          <span class="nav-icon">⚙</span> Configuración
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="avatar">JP</div>
+          <div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.8);font-weight:500">Jorge Pérez</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4)">Abogado senior</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-title" id="topbar-title">Dashboard</div>
+        <div class="topbar-actions">
+          <div class="search-bar" style="width:220px">
+            <span class="search-icon">⌕</span>
+            <input placeholder="Buscar obligación...">
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openModal('modal-nuevo-iga')">+ Nuevo IGA</button>
+        </div>
+      </header>
+
+      <!-- ============ SCREEN 2: DASHBOARD ============ -->
+      <div id="screen-dashboard" class="screen active content">
+        <div class="empresa-header">
+          <div>
+            <h3>Sociedad Minera Cerro Verde S.A.A.</h3>
+            <p>RUC 20170072465 · Sector: Minería · Subsector: Metálica · Lima</p>
+          </div>
+          <div class="empresa-stats">
+            <div class="stat"><div class="stat-n">3</div><div class="stat-l">Unidades</div></div>
+            <div class="stat"><div class="stat-n">5</div><div class="stat-l">IGAs</div></div>
+            <div class="stat"><div class="stat-n">118</div><div class="stat-l">Obligaciones</div></div>
+            <div class="stat"><div class="stat-n" style="color:#f5c842">3</div><div class="stat-l">Pendientes</div></div>
+          </div>
+        </div>
+
+        <div class="section-header">
+          <span class="section-title">Unidades fiscalizables</span>
+          <button class="btn btn-secondary btn-sm" onclick="openModal('modal-nueva-uf')">+ Agregar unidad</button>
+        </div>
+
+        <div class="unidades-grid">
+          <div class="unidad-card selected" onclick="selectUF(this, 'panel-la-querendosa')">
+            <div class="unidad-name">U.P. La Querendosa</div>
+            <div class="unidad-meta">
+              <span>Exploración · Arequipa</span>
+              <span>Cod: UF22-001</span>
+            </div>
+            <div class="unidad-iga-count">
+              <span class="iga-pill">DIA</span>
+              <span class="text-xs text-muted">1 IGA · 118 obligaciones</span>
+            </div>
+          </div>
+          <div class="unidad-card" onclick="selectUF(this, 'panel-cerro-verde')">
+            <div class="unidad-name">U.P. Cerro Verde</div>
+            <div class="unidad-meta">
+              <span>Explotación · Arequipa</span>
+              <span>Cod: UF22-002</span>
+            </div>
+            <div class="unidad-iga-count">
+              <span class="iga-pill">EIA-d</span>
+              <span class="iga-pill">ITS</span>
+              <span class="text-xs text-muted">2 IGAs · 347 obligaciones</span>
+            </div>
+          </div>
+          <div class="unidad-card" onclick="selectUF(this, 'panel-nueva')">
+            <div class="unidad-name">U.P. Pampa Norte</div>
+            <div class="unidad-meta">
+              <span>Exploración · Moquegua</span>
+              <span>Cod: UF23-001</span>
+            </div>
+            <div class="unidad-iga-count">
+              <span class="text-xs text-muted" style="color:var(--text3)">Sin IGAs registrados</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel IGAs La Querendosa -->
+        <div id="panel-la-querendosa" class="mt-20">
+          <div class="iga-panel">
+            <div class="iga-panel-header">
+              <span class="iga-panel-title">IGAs — U.P. La Querendosa</span>
+              <button class="btn btn-primary btn-sm" onclick="openModal('modal-nuevo-iga')">+ Nuevo IGA</button>
+            </div>
+            <div class="iga-list">
+              <div class="iga-row" onclick="goTo('consolidada')">
+                <div class="iga-tipo">DIA</div>
+                <div class="iga-info">
+                  <div class="iga-nombre">DIA Proyecto Exploración Geológica La Querendosa</div>
+                  <div class="iga-fecha">Aprobado: 15/03/2023 · Res. 142-2023-MEM/DGAAM</div>
+                </div>
+                <div class="iga-obligs">118 obligaciones</div>
+                <span class="badge badge-green">Activo</span>
+                <span style="color:var(--text3);font-size:18px">›</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel Cerro Verde (hidden) -->
+        <div id="panel-cerro-verde" class="mt-20" style="display:none">
+          <div class="iga-panel">
+            <div class="iga-panel-header">
+              <span class="iga-panel-title">IGAs — U.P. Cerro Verde</span>
+              <button class="btn btn-primary btn-sm" onclick="openModal('modal-nuevo-iga')">+ Nuevo IGA</button>
+            </div>
+            <div class="iga-list">
+              <div class="iga-row">
+                <div class="iga-tipo">EIA-d</div>
+                <div class="iga-info">
+                  <div class="iga-nombre">EIA-d Ampliación Planta de Beneficio</div>
+                  <div class="iga-fecha">Aprobado: 08/06/2021 · Res. 089-2021-SENACE</div>
+                </div>
+                <div class="iga-obligs">215 obligaciones</div>
+                <span class="badge badge-green">Activo</span>
+                <span style="color:var(--text3);font-size:18px">›</span>
+              </div>
+              <div class="iga-row">
+                <div class="iga-tipo">ITS</div>
+                <div class="iga-info">
+                  <div class="iga-nombre">ITS Modificación Circuito de Agua</div>
+                  <div class="iga-fecha">Aprobado: 22/11/2022 · Res. 201-2022-SENACE</div>
+                </div>
+                <div class="iga-obligs">132 obligaciones</div>
+                <span class="badge badge-green">Activo</span>
+                <span style="color:var(--text3);font-size:18px">›</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel nueva UF -->
+        <div id="panel-nueva" class="mt-20" style="display:none">
+          <div class="card" style="text-align:center;padding:40px">
+            <div style="font-size:32px;margin-bottom:12px">📋</div>
+            <div class="font-600 mb-8">U.P. Pampa Norte no tiene IGAs registrados</div>
+            <p class="text-sm text-muted mb-16">Sube el primer IGA para comenzar a gestionar las obligaciones ambientales de esta unidad.</p>
+            <button class="btn btn-primary" onclick="openModal('modal-nuevo-iga')">+ Ingresar primer IGA</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ SCREEN 3: PREVIEW (se activa via modal) ============ -->
+
+      <!-- ============ SCREEN 4: VISTA CONSOLIDADA ============ -->
+      <div id="screen-consolidada" class="screen content">
+        <div class="flex items-center justify-between mb-16">
+          <div>
+            <div class="text-xs text-muted mb-4">U.P. La Querendosa · DIA 2023</div>
+            <div style="font-size:18px;font-weight:600">Obligaciones consolidadas</div>
+          </div>
+          <div class="flex gap-8">
+            <button class="btn btn-secondary btn-sm">↓ Exportar Excel</button>
+            <button class="btn btn-secondary btn-sm">↓ Informe OEFA</button>
+          </div>
+        </div>
+
+        <!-- Stats row -->
+        <div class="grid-3 mb-20">
+          <div class="card card-sm" style="border-left:3px solid var(--accent)">
+            <div class="text-xs text-muted mb-4">Total obligaciones</div>
+            <div style="font-size:22px;font-weight:600">118</div>
+            <div class="text-xs text-muted mt-4">10 categorías</div>
+          </div>
+          <div class="card card-sm" style="border-left:3px solid var(--amber)">
+            <div class="text-xs text-muted mb-4">Pendientes</div>
+            <div style="font-size:22px;font-weight:600;color:var(--amber)">47</div>
+            <div class="progress-bar mt-8"><div class="progress-fill" style="width:40%;background:var(--amber)"></div></div>
+          </div>
+          <div class="card card-sm" style="border-left:3px solid var(--accent2)">
+            <div class="text-xs text-muted mb-4">Cumplidas</div>
+            <div style="font-size:22px;font-weight:600;color:var(--accent)">71</div>
+            <div class="progress-bar mt-8"><div class="progress-fill" style="width:60%"></div></div>
+          </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="flex gap-8 mb-16 items-center">
+          <div class="chip active">Todas</div>
+          <div class="chip">Pendientes</div>
+          <div class="chip">Cumplidas</div>
+          <div class="chip">IGA</div>
+          <div class="chip">Normativa</div>
+          <div style="margin-left:auto" class="flex gap-8">
+            <select style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit">
+              <option>Todas las etapas</option>
+              <option>Construcción</option>
+              <option>Operación</option>
+              <option>Cierre</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Categorías colapsables -->
+        <div id="cat-list"></div>
+      </div>
+
+      <!-- ============ SCREEN 5: DETALLE OBLIGACIÓN ============ -->
+      <div id="screen-detalle" class="screen content">
+        <div class="flex items-center gap-12 mb-20">
+          <button class="btn btn-ghost btn-sm" onclick="goTo('consolidada')">← Volver</button>
+          <div style="font-size:12px;color:var(--text3)">Obligaciones › Manejo de accesos y plataformas › #1</div>
+        </div>
+
+        <div class="flex gap-20">
+          <!-- Detalle principal -->
+          <div style="flex:1">
+            <div class="card mb-16">
+              <div class="flex items-center justify-between mb-16">
+                <div>
+                  <div class="text-xs text-muted mb-4">OBL-001 · Manejo de accesos, plataformas y pozas</div>
+                  <div style="font-size:16px;font-weight:600;line-height:1.4">Remover la vegetación en el ancho mínimo necesario para la construcción del acceso</div>
+                </div>
+                <span class="badge badge-amber"><span class="dot"></span> Pendiente</span>
+              </div>
+
+              <div class="detalle-grid mb-16">
+                <div class="detalle-field">
+                  <div class="detalle-label">Plan</div>
+                  <div class="detalle-value">Plan de Manejo Ambiental</div>
+                </div>
+                <div class="detalle-field">
+                  <div class="detalle-label">Etapa</div>
+                  <div class="detalle-value">Construcción</div>
+                </div>
+                <div class="detalle-field">
+                  <div class="detalle-label">Frecuencia</div>
+                  <div class="detalle-value">Puntual — inicio de construcción</div>
+                </div>
+                <div class="detalle-field">
+                  <div class="detalle-label">Componente / Ámbito</div>
+                  <div class="detalle-value">Accesos · <span class="badge badge-blue" style="font-size:10px">Componente UF</span></div>
+                </div>
+                <div class="detalle-field">
+                  <div class="detalle-label">Fuente</div>
+                  <div class="detalle-value">IGA — DIA La Querendosa (pág. 15)</div>
+                </div>
+                <div class="detalle-field">
+                  <div class="detalle-label">Normativa asociada</div>
+                  <div class="detalle-value text-muted">No especificada</div>
+                </div>
+                <div class="detalle-field">
+                  <div class="detalle-label">Parámetros</div>
+                  <div class="detalle-value font-mono" style="font-size:12px">Ancho mínimo necesario</div>
+                </div>
+                <div class="detalle-field">
+                  <div class="detalle-label">Responsable</div>
+                  <div class="detalle-value text-muted">No especificado</div>
+                </div>
+              </div>
+
+              <div class="field">
+                <div class="detalle-label">Evidencia de cumplimiento requerida</div>
+                <div class="detalle-value mt-4" style="padding:10px;background:var(--surface2);border-radius:6px;font-size:12px;color:var(--text2)">
+                  Registro fotográfico, mediciones de ancho de corte, planos de ubicación
+                </div>
+              </div>
+
+              <div class="periodic-info mt-12">
+                <span>ℹ</span>
+                <span>Obligación puntual — se cumple una sola vez al inicio de la construcción del componente</span>
+              </div>
+            </div>
+
+            <!-- Historial de versiones -->
+            <div class="card mb-16">
+              <div class="font-600 mb-12" style="font-size:13px">Historial de versiones</div>
+              <div class="historial-item">
+                <div class="historial-dot-wrap">
+                  <div class="historial-dot" style="background:var(--accent)"></div>
+                  <div class="historial-line"></div>
+                </div>
+                <div class="historial-content">
+                  <div class="historial-label">Versión actual — DIA 2023</div>
+                  <div class="historial-date">Ingresada el 10/01/2024 · IGA activo</div>
+                </div>
+              </div>
+              <div class="historial-item">
+                <div class="historial-dot-wrap">
+                  <div class="historial-dot"></div>
+                </div>
+                <div class="historial-content">
+                  <div class="historial-label" style="color:var(--text2)">Sin versiones anteriores</div>
+                  <div class="historial-date">Primer IGA de esta unidad</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Panel de cumplimiento -->
+          <div style="width:300px;flex-shrink:0">
+            <div class="card mb-12">
+              <div class="font-600 mb-12" style="font-size:13px">Registrar cumplimiento</div>
+
+              <div class="tabs" style="margin-bottom:16px">
+                <div class="tab active" onclick="switchTab(this,'tab-texto')">Texto</div>
+                <div class="tab" onclick="switchTab(this,'tab-archivo')">Archivos</div>
+                <div class="tab" onclick="switchTab(this,'tab-foto')">Fotos</div>
+              </div>
+
+              <div id="tab-texto">
+                <div class="field">
+                  <label>Descripción de la evidencia</label>
+                  <textarea placeholder="Describe la acción realizada, fecha, responsable, condiciones..."></textarea>
+                </div>
+              </div>
+              <div id="tab-archivo" style="display:none">
+                <div class="evidencia-box" onclick="this.style.borderColor='var(--accent)'">
+                  <div class="evidencia-icon">📎</div>
+                  <div class="evidencia-text">Subir archivo</div>
+                  <div class="evidencia-sub">PDF, DOC, XLS · máx 25MB</div>
+                </div>
+              </div>
+              <div id="tab-foto" style="display:none">
+                <div class="evidencia-box">
+                  <div class="evidencia-icon">📷</div>
+                  <div class="evidencia-text">Subir foto o imagen</div>
+                  <div class="evidencia-sub">JPG, PNG · máx 10MB</div>
+                </div>
+              </div>
+
+              <div class="divider"></div>
+              <button class="btn btn-primary w-full" style="justify-content:center" onclick="marcarCumplida()">
+                ✓ Marcar como cumplida
+              </button>
+              <p class="text-xs text-muted mt-8" style="text-align:center">Se requiere al menos un registro de evidencia</p>
+            </div>
+
+            <!-- IA Validación (futuro) -->
+            <div class="card" style="background:var(--surface2);border-style:dashed">
+              <div class="flex items-center gap-8 mb-8">
+                <span>🤖</span>
+                <span class="font-600 text-sm">Validación IA</span>
+                <span class="badge badge-gray text-xs">Próximamente</span>
+              </div>
+              <p class="text-xs text-muted">La IA revisará automáticamente si la evidencia adjunta cumple con los requisitos de esta obligación.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ SCREEN 6: ALERTAS ============ -->
+      <div id="screen-alertas" class="screen content">
+        <div class="flex items-center justify-between mb-20">
+          <div>
+            <div style="font-size:18px;font-weight:600">Alertas y vencimientos</div>
+            <div class="text-sm text-muted mt-4">Período actual: Mayo 2025</div>
+          </div>
+          <select style="padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px">
+            <option>Todas las unidades</option>
+            <option>U.P. La Querendosa</option>
+            <option>U.P. Cerro Verde</option>
+          </select>
+        </div>
+
+        <div class="grid-2 mb-20" style="grid-template-columns:1fr 1fr 1fr;gap:12px">
+          <div class="card card-sm" style="border-left:3px solid var(--red)">
+            <div class="text-xs" style="color:var(--red);font-weight:600;text-transform:uppercase;letter-spacing:.06em">Vencidas</div>
+            <div style="font-size:24px;font-weight:600;color:var(--red);margin-top:4px">3</div>
+          </div>
+          <div class="card card-sm" style="border-left:3px solid var(--amber)">
+            <div class="text-xs" style="color:var(--amber);font-weight:600;text-transform:uppercase;letter-spacing:.06em">Próximas 7 días</div>
+            <div style="font-size:24px;font-weight:600;color:var(--amber);margin-top:4px">8</div>
+          </div>
+          <div class="card card-sm" style="border-left:3px solid var(--accent)">
+            <div class="text-xs" style="color:var(--accent);font-weight:600;text-transform:uppercase;letter-spacing:.06em">Cumplidas este mes</div>
+            <div style="font-size:24px;font-weight:600;color:var(--accent);margin-top:4px">24</div>
+          </div>
+        </div>
+
+        <div class="section-title mb-12">Vencidas — acción requerida</div>
+        <div class="alert-card urgente" onclick="goTo('detalle')">
+          <div class="alert-icon urgente">⚠</div>
+          <div class="alert-info">
+            <div class="alert-title">Monitoreo de calidad de agua — Punto MA-01</div>
+            <div class="alert-meta">U.P. La Querendosa · DIA 2023 · Venció: 30/04/2025 · Trimestral</div>
+          </div>
+          <span class="badge badge-red">Vencida</span>
+        </div>
+        <div class="alert-card urgente">
+          <div class="alert-icon urgente">⚠</div>
+          <div class="alert-info">
+            <div class="alert-title">Reporte de manejo de residuos peligrosos a DIGESA</div>
+            <div class="alert-meta">U.P. Cerro Verde · EIA-d · Venció: 28/04/2025 · Mensual</div>
+          </div>
+          <span class="badge badge-red">Vencida</span>
+        </div>
+        <div class="alert-card urgente">
+          <div class="alert-icon urgente">⚠</div>
+          <div class="alert-info">
+            <div class="alert-title">Inspección de sistemas de contención de combustibles</div>
+            <div class="alert-meta">U.P. La Querendosa · DIA 2023 · Venció: 01/05/2025 · Mensual</div>
+          </div>
+          <span class="badge badge-red">Vencida</span>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="section-title mb-12">Próximos 7 días</div>
+        <div class="alert-card proximo">
+          <div class="alert-icon proximo">◷</div>
+          <div class="alert-info">
+            <div class="alert-title">Verificar estado de pozas de sedimentación</div>
+            <div class="alert-meta">U.P. La Querendosa · DIA 2023 · Vence: 13/05/2025 · Quincenal</div>
+          </div>
+          <span class="badge badge-amber">2 días</span>
+        </div>
+        <div class="alert-card proximo">
+          <div class="alert-icon proximo">◷</div>
+          <div class="alert-info">
+            <div class="alert-title">Monitoreo de emisiones y material particulado PM10</div>
+            <div class="alert-meta">U.P. Cerro Verde · EIA-d · Vence: 15/05/2025 · Mensual</div>
+          </div>
+          <span class="badge badge-amber">4 días</span>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="section-title mb-12">Cumplidas este mes — con registro</div>
+        <div class="alert-card ok">
+          <div class="alert-icon ok">✓</div>
+          <div class="alert-info">
+            <div class="alert-title">Riego de vías de acceso para control de polvo</div>
+            <div class="alert-meta">U.P. La Querendosa · Cumplida: 05/05/2025 · Evidencia: Bitácora + fotos</div>
+          </div>
+          <span class="badge badge-green">Cumplida</span>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ============ MODAL: NUEVO IGA ============ -->
+<div id="modal-nuevo-iga" class="modal-overlay">
+  <div class="modal" style="width:700px">
+    <div class="modal-header">
+      <div class="modal-title">Ingresar nuevo IGA</div>
+      <button class="close-btn" onclick="closeModal('modal-nuevo-iga')">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- Stepper -->
+      <div class="stepper mb-20">
+        <div class="step done" id="s1"><div class="step-num">✓</div><div class="step-label">Datos</div></div>
+        <div class="step-line"></div>
+        <div class="step active" id="s2"><div class="step-num">2</div><div class="step-label">Archivo</div></div>
+        <div class="step-line"></div>
+        <div class="step" id="s3"><div class="step-num">3</div><div class="step-label">Preview</div></div>
+        <div class="step-line"></div>
+        <div class="step" id="s4"><div class="step-num">4</div><div class="step-label">Confirmar</div></div>
+      </div>
+
+      <!-- Paso 1 datos (ya completo) -->
+      <div id="modal-step-1" style="display:none">
+        <div class="grid-2">
+          <div class="field">
+            <label>Tipo de IGA *</label>
+            <select><option>DIA</option><option>ITS</option><option>EIA-sd</option><option>EIA-d</option><option>MEIA</option><option>PAMA</option><option>PCPAM</option></select>
+          </div>
+          <div class="field">
+            <label>Unidad fiscalizable *</label>
+            <select><option>U.P. La Querendosa</option><option>U.P. Cerro Verde</option><option>U.P. Pampa Norte</option></select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Nombre del instrumento *</label>
+          <input type="text" placeholder="Ej: DIA Proyecto Exploración Geológica La Querendosa">
+        </div>
+        <div class="grid-2">
+          <div class="field">
+            <label>N° Resolución de aprobación</label>
+            <input type="text" placeholder="Ej: Res. 142-2023-MEM/DGAAM">
+          </div>
+          <div class="field">
+            <label>Fecha de aprobación</label>
+            <input type="date">
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="field">
+            <label>Autoridad que aprobó</label>
+            <select><option>MINEM/DGAAM</option><option>SENACE</option><option>MINAM</option><option>Gobierno Regional</option></select>
+          </div>
+          <div class="field">
+            <label>Etapa principal</label>
+            <select><option>Exploración</option><option>Construcción</option><option>Operación</option><option>Cierre</option></select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paso 2: Upload -->
+      <div id="modal-step-2">
+        <div class="evidencia-box mb-16" style="padding:40px" onclick="simulateUpload()">
+          <div class="evidencia-icon">📄</div>
+          <div class="evidencia-text">Arrastra el PDF del IGA aquí</div>
+          <div class="evidencia-sub">o haz clic para seleccionar · PDF · máx 500MB</div>
+        </div>
+        <div id="upload-progress" style="display:none">
+          <div class="flex items-center gap-10 mb-8">
+            <span class="text-sm">DIA_La_Querendosa_2023.pdf</span>
+            <span class="text-xs text-muted" id="upload-pct" style="margin-left:auto">Procesando con IA...</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+          <p class="text-xs text-muted mt-8">Extrayendo obligaciones con Document AI + Claude · Esto puede tomar 1-3 minutos</p>
+        </div>
+      </div>
+
+      <!-- Paso 3: Preview -->
+      <div id="modal-step-3" style="display:none">
+        <div class="update-banner mb-16">
+          <span>⚡</span>
+          <div>
+            <strong>2 posibles actualizaciones detectadas</strong> respecto al IGA anterior. Revisa y confirma cuáles aplican.
+          </div>
+        </div>
+        <div class="preview-table">
+          <div class="preview-row">
+            <div class="preview-check"><input type="checkbox" checked></div>
+            <div class="preview-body">
+              <div class="update-banner" style="margin-bottom:8px">
+                <span>🔄</span>
+                <span>Posible actualización de: "Remover vegetación en ancho mínimo..." (IGA anterior)</span>
+              </div>
+              <div class="preview-desc">Remover la vegetación en el ancho mínimo necesario para la construcción del acceso, garantizando un máximo de 4m de ancho de corte según nueva directiva MINEM.</div>
+              <div class="preview-tags">
+                <span class="preview-tag">Construcción</span>
+                <span class="preview-tag">Accesos</span>
+                <span class="preview-tag">Puntual</span>
+                <span class="preview-tag">IGA</span>
+              </div>
+            </div>
+          </div>
+          <div class="preview-row">
+            <div class="preview-check"><input type="checkbox" checked></div>
+            <div class="preview-body">
+              <div class="preview-desc">Almacenar el material removido en lugares físicamente estables y cercanos a las áreas a disturbar, protegido de la erosión eólica mediante mallas de contención.</div>
+              <div class="preview-tags">
+                <span class="preview-tag">Construcción</span>
+                <span class="preview-tag">Material removido</span>
+                <span class="preview-tag">Permanente</span>
+                <span class="preview-tag">IGA</span>
+              </div>
+            </div>
+          </div>
+          <div class="preview-row">
+            <div class="preview-check"><input type="checkbox" checked></div>
+            <div class="preview-body">
+              <div class="preview-desc">Instalar pozas de sedimentación para retener el lodo de perforación evitando que fluya fuera de la zona de trabajo, conducido mediante canales perimetrales.</div>
+              <div class="preview-tags">
+                <span class="preview-tag">Operación</span>
+                <span class="preview-tag">Pozas</span>
+                <span class="preview-tag">Permanente</span>
+                <span class="preview-tag">IGA</span>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-muted mt-12">Mostrando 3 de 118 obligaciones extraídas · <a href="#" style="color:var(--accent)">Ver todas</a></p>
+        </div>
+      </div>
+
+      <!-- Paso 4: Confirmar -->
+      <div id="modal-step-4" style="display:none">
+        <div class="card" style="background:var(--accent-light);border-color:var(--accent-border);margin-bottom:16px">
+          <div class="flex items-center gap-10 mb-12">
+            <span style="font-size:20px">✅</span>
+            <div class="font-600">Resumen de ingreso</div>
+          </div>
+          <div class="grid-2" style="gap:10px">
+            <div><div class="text-xs text-muted">IGA</div><div class="text-sm font-600">DIA La Querendosa 2023</div></div>
+            <div><div class="text-xs text-muted">Obligaciones extraídas</div><div class="text-sm font-600">118</div></div>
+            <div><div class="text-xs text-muted">Actualizaciones</div><div class="text-sm font-600">2 confirmadas</div></div>
+            <div><div class="text-xs text-muted">Estado</div><div class="text-sm font-600">Listo para ingresar</div></div>
+          </div>
+        </div>
+        <p class="text-sm text-muted">Las obligaciones se agregarán a la vista consolidada de la unidad fiscalizable. Las obligaciones anteriores actualizadas quedarán en el historial.</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="prevStep()">← Anterior</button>
+      <button class="btn btn-primary" id="btn-next-step" onclick="nextStep()">Procesar IGA →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: NUEVA UF ============ -->
+<div id="modal-nueva-uf" class="modal-overlay">
+  <div class="modal" style="width:500px">
+    <div class="modal-header">
+      <div class="modal-title">Nueva unidad fiscalizable</div>
+      <button class="close-btn" onclick="closeModal('modal-nueva-uf')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>Nombre de la unidad *</label><input type="text" placeholder="Ej: U.P. Pampa Norte"></div>
+      <div class="grid-2">
+        <div class="field"><label>Código UF</label><input type="text" placeholder="Ej: UF23-001"></div>
+        <div class="field"><label>Sector *</label><select><option>Minería</option><option>Hidrocarburos</option><option>Energía</option><option>Industria</option></select></div>
+      </div>
+      <div class="grid-2">
+        <div class="field"><label>Subsector</label><select><option>Metálica</option><option>No metálica</option><option>Exploración</option></select></div>
+        <div class="field"><label>Actividad</label><select><option>Exploración</option><option>Explotación</option><option>Beneficio</option></select></div>
+      </div>
+      <div class="grid-2">
+        <div class="field"><label>Departamento</label><input type="text" placeholder="Arequipa"></div>
+        <div class="field"><label>Provincia</label><input type="text" placeholder="Arequipa"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-nueva-uf')">Cancelar</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-nueva-uf')">Guardar unidad</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATOS ──
+const OBLIGACIONES = {
+  "Manejo de accesos, plataformas y pozas": [
+    {id:'OBL-001', desc:'Remover la vegetación en el ancho mínimo necesario para la construcción del acceso.', etapa:'Construcción', frecuencia:'Puntual', fuente:'IGA', estado:'pendiente'},
+    {id:'OBL-002', desc:'Almacenar el material removido en lugares físicamente estables, protegido de la erosión eólica.', etapa:'Construcción', frecuencia:'Permanente', fuente:'IGA', estado:'cumplida'},
+    {id:'OBL-003', desc:'Instalar pozas de sedimentación para retener el lodo evitando que fluya fuera de la zona de trabajo.', etapa:'Operación', frecuencia:'Permanente', fuente:'IGA', estado:'pendiente'},
+  ],
+  "Control de agua y efluentes": [
+    {id:'OBL-010', desc:'Mantener todas las instalaciones a una distancia mayor de 50m de cualquier cuerpo de agua.', etapa:'Todas las etapas', frecuencia:'Permanente', fuente:'IGA', estado:'cumplida'},
+    {id:'OBL-011', desc:'Recircular el agua de perforación diamantina mediante sistema de pozas para minimizar consumo hídrico.', etapa:'Operación', frecuencia:'Permanente', fuente:'IGA', estado:'pendiente'},
+  ],
+  "Control de emisiones, ruido y polvo": [
+    {id:'OBL-020', desc:'Realizar mantenimiento permanente de los equipos de combustión y vehículos para reducir emisiones.', etapa:'Todas las etapas', frecuencia:'Mensual', fuente:'IGA', estado:'pendiente'},
+    {id:'OBL-021', desc:'Regar periódicamente las zonas que puedan generar dispersión de polvo sobre trabajadores y área de influencia.', etapa:'Operación', frecuencia:'Diaria', fuente:'IGA', estado:'cumplida'},
+  ],
+  "Manejo de residuos y sustancias": [
+    {id:'OBL-030', desc:'Contratar EPS-RS debidamente inscrita y autorizada en DIGESA para el manejo de residuos peligrosos.', etapa:'Todas las etapas', frecuencia:'Permanente', fuente:'IGA', estado:'cumplida'},
+    {id:'OBL-031', desc:'Ubicar baño químico cercano a las actividades de perforación con ubicación variable según avance.', etapa:'Operación', frecuencia:'Permanente', fuente:'IGA', estado:'pendiente'},
+    {id:'OBL-032', desc:'Segregar residuos en cilindros identificados por colores según tipo de residuo (doméstico, industrial, peligroso).', etapa:'Todas las etapas', frecuencia:'Permanente', fuente:'IGA', estado:'cumplida'},
+  ],
+  "Control de derrames y contingencias": [
+    {id:'OBL-040', desc:'Colocar insumos de perforación sobre base de madera o metálica con paños absorbentes y geomembrana de alta densidad.', etapa:'Operación', frecuencia:'Permanente', fuente:'IGA', estado:'pendiente'},
+    {id:'OBL-041', desc:'Capacitar a trabajadores en procedimientos de contingencia ante derrames de hidrocarburos.', etapa:'Construcción', frecuencia:'Semestral', fuente:'IGA', estado:'cumplida'},
+  ],
+  "Protección de flora y fauna": [
+    {id:'OBL-050', desc:'Rescatar y reubicar individuos de cactáceas previa inspección de campo cuando se requiera remoción.', etapa:'Construcción', frecuencia:'Puntual', fuente:'IGA', estado:'pendiente'},
+    {id:'OBL-051', desc:'Verificar frecuentemente el buen estado de los silenciadores de la maquinaria para reducir ruido a la fauna.', etapa:'Operación', frecuencia:'Mensual', fuente:'IGA', estado:'cumplida'},
+  ],
+  "Protección arqueológica y social": [
+    {id:'OBL-060', desc:'Gestionar la obtención de 07 CIRAs ante el Ministerio de Cultura antes del inicio de operaciones.', etapa:'Construcción', frecuencia:'Puntual', fuente:'IGA', estado:'cumplida'},
+    {id:'OBL-061', desc:'Realizar talleres informativos con poblaciones involucradas sobre las características de la actividad minera.', etapa:'Todas las etapas', frecuencia:'Semestral', fuente:'Normativa', estado:'pendiente'},
+  ],
+  "Equipos y sistemas comprometidos": [
+    {id:'OBL-070', desc:'Proporcionar EPP a todos los trabajadores: cascos, lentes, zapatos con punta de acero, guantes, protectores auditivos y chalecos reflectores.', etapa:'Todas las etapas', frecuencia:'Permanente', fuente:'IGA', estado:'cumplida'},
+    {id:'OBL-071', desc:'Revisar periódicamente equipos y maquinaria de perforación para detectar desperfectos que afecten la seguridad.', etapa:'Operación', frecuencia:'Mensual', fuente:'IGA', estado:'pendiente'},
+  ],
+  "Cierre y rehabilitación": [
+    {id:'OBL-080', desc:'Rellenar los cortes de plataformas con el material extraído de las mismas y nivelación posterior.', etapa:'Cierre', frecuencia:'Puntual', fuente:'IGA', estado:'pendiente'},
+    {id:'OBL-081', desc:'Revegetar accesos y plataformas rehabilitadas con especies nativas para control de erosión.', etapa:'Cierre', frecuencia:'Puntual', fuente:'IGA', estado:'pendiente'},
+  ],
+  "Monitoreo y seguimiento": [
+    {id:'OBL-090', desc:'Realizar monitoreo post-cierre de estabilidad física de taludes y superficies intervenidas según cronograma aprobado.', etapa:'Post-cierre', frecuencia:'Según cronograma', fuente:'IGA', estado:'pendiente'},
+  ]
+};
+
+// ── ESTADO ──
+let currentStep = 2;
+let currentCats = {};
+
+// ── NAVEGACIÓN ──
+function goTo(screen) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  if (screen === 'dashboard' || screen === 'consolidada' || screen === 'detalle' || screen === 'alertas') {
+    document.getElementById('app-shell').style.display = 'block';
+    document.getElementById('screen-login').style.display = 'none';
+    const el = document.getElementById('screen-' + screen);
+    if (el) el.classList.add('active');
+    document.getElementById('topbar-title').textContent = {
+      dashboard: 'Dashboard', consolidada: 'Obligaciones consolidadas',
+      detalle: 'Detalle de obligación', alertas: 'Alertas'
+    }[screen] || '';
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const navMap = {dashboard:0, consolidada:1, alertas:2};
+    if (navMap[screen] !== undefined) document.querySelectorAll('.nav-item')[navMap[screen]].classList.add('active');
+    if (screen === 'consolidada') renderCats();
+  }
+}
+
+// ── CATEGORÍAS ──
+function renderCats() {
+  const container = document.getElementById('cat-list');
+  container.innerHTML = '';
+  Object.entries(OBLIGACIONES).forEach(([cat, obligs]) => {
+    const cumplidas = obligs.filter(o => o.estado === 'cumplida').length;
+    const open = currentCats[cat];
+    const section = document.createElement('div');
+    section.className = 'cat-section';
+    section.innerHTML = `
+      <div class="cat-header" onclick="toggleCat('${cat}', this)">
+        <div class="cat-icon"></div>
+        <div class="cat-name">${cat}</div>
+        <div class="cat-count">${cumplidas}/${obligs.length} cumplidas</div>
+        <div class="cat-chevron ${open?'open':''}">›</div>
+      </div>
+      <div class="cat-table ${open?'open':''}">
+        <table>
+          <thead>
+            <tr>
+              <th>N°</th>
+              <th>Obligación</th>
+              <th>Etapa</th>
+              <th>Frecuencia</th>
+              <th>Fuente</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${obligs.map(o => `
+              <tr style="cursor:pointer" onclick="goTo('detalle')">
+                <td class="td-mono">${o.id}</td>
+                <td style="max-width:320px">${o.desc}</td>
+                <td><span class="badge badge-gray">${o.etapa}</span></td>
+                <td class="text-muted" style="font-size:12px">${o.frecuencia}</td>
+                <td><span class="badge ${o.fuente==='IGA'?'badge-blue':'badge-amber'}">${o.fuente}</span></td>
+                <td><span class="badge ${o.estado==='cumplida'?'badge-green':'badge-amber'}">
+                  <span class="dot"></span>${o.estado==='cumplida'?'Cumplida':'Pendiente'}
+                </span></td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
+    container.appendChild(section);
+  });
+}
+
+function toggleCat(cat, header) {
+  currentCats[cat] = !currentCats[cat];
+  const chevron = header.querySelector('.cat-chevron');
+  const table = header.nextElementSibling;
+  chevron.classList.toggle('open');
+  table.classList.toggle('open');
+}
+
+// ── MODAL ──
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ── STEPPER MODAL ──
+function nextStep() {
+  if (currentStep === 2) { simulateUpload(); return; }
+  if (currentStep === 3) { setStep(4); document.getElementById('btn-next-step').textContent = '✓ Confirmar e ingresar'; return; }
+  if (currentStep === 4) { closeModal('modal-nuevo-iga'); goTo('consolidada'); return; }
+}
+function prevStep() {
+  if (currentStep > 1) setStep(currentStep - 1);
+}
+function setStep(n) {
+  currentStep = n;
+  for (let i=1;i<=4;i++) {
+    const s = document.getElementById('s'+i);
+    const p = document.getElementById('modal-step-'+i);
+    if (p) p.style.display = i===n?'block':'none';
+    s.classList.remove('active','done');
+    if (i < n) s.classList.add('done');
+    else if (i === n) s.classList.add('active');
+    s.querySelector('.step-num').textContent = i < n ? '✓' : i;
+  }
+  const labels = ['', 'Siguiente →', 'Procesar IGA →', 'Confirmar →', '✓ Ingresar obligaciones'];
+  document.getElementById('btn-next-step').textContent = labels[n];
+}
+
+function simulateUpload() {
+  document.getElementById('upload-progress').style.display = 'block';
+  let p = 0;
+  const fill = document.getElementById('prog-fill');
+  const pct = document.getElementById('upload-pct');
+  const msgs = ['Leyendo PDF...','Procesando con Document AI...','Extrayendo con Claude...','Estructurando obligaciones...','¡Listo!'];
+  const iv = setInterval(() => {
+    p += 4;
+    fill.style.width = Math.min(p,100) + '%';
+    pct.textContent = msgs[Math.floor(p/25)] || '¡Listo!';
+    if (p >= 100) { clearInterval(iv); setTimeout(()=>setStep(3),600); }
+  }, 80);
+}
+
+// ── TABS DETALLE ──
+function switchTab(el, tabId) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  ['tab-texto','tab-archivo','tab-foto'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (el) el.style.display = id===tabId?'block':'none';
+  });
+}
+
+// ── UNIDADES ──
+function selectUF(card, panelId) {
+  document.querySelectorAll('.unidad-card').forEach(c=>c.classList.remove('selected'));
+  card.classList.add('selected');
+  document.querySelectorAll('[id^="panel-"]').forEach(p=>p.style.display='none');
+  const panel = document.getElementById(panelId);
+  if (panel) panel.style.display = 'block';
+}
+
+function marcarCumplida() {
+  alert('Evidencia registrada. La obligación ha sido marcada como cumplida y se ha registrado en el historial del período actual.');
+}
+
+// ── CHIPS ──
+document.querySelectorAll('.chip').forEach(c => {
+  c.addEventListener('click', function() {
+    this.closest('.chip-row')?.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
