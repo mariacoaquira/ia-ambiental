@@ -352,11 +352,11 @@ tr:hover td { background: var(--surface2); }
       <header class="topbar">
         <div class="topbar-title" id="topbar-title">Dashboard</div>
         <div class="topbar-actions">
-          <div class="search-bar" style="width:220px">
+          <div class="search-bar" style="width:260px">
             <span class="search-icon">⌕</span>
             <input placeholder="Buscar obligación...">
+            <button onclick="" style="background:none;border:none;cursor:pointer;color:var(--text2);font-size:16px;padding:0 2px;line-height:1">⌕</button>
           </div>
-          <button class="btn btn-primary btn-sm" onclick="openModal('modal-nuevo-iga')">+ Nuevo IGA</button>
         </div>
       </header>
 
@@ -381,7 +381,7 @@ tr:hover td { background: var(--surface2); }
         </div>
 
         <div class="unidades-grid">
-          <div class="unidad-card selected" onclick="selectUF(this, 'panel-la-querendosa')">
+          <div class="unidad-card selected" onclick="selectUF(this, 'panel-la-querendosa', 'La Querendosa')">
             <div class="unidad-name">U.P. La Querendosa</div>
             <div class="unidad-meta">
               <span>Exploración · Arequipa</span>
@@ -392,7 +392,7 @@ tr:hover td { background: var(--surface2); }
               <span class="text-xs text-muted">1 IGA · 118 obligaciones</span>
             </div>
           </div>
-          <div class="unidad-card" onclick="selectUF(this, 'panel-cerro-verde')">
+          <div class="unidad-card" onclick="selectUF(this, 'panel-cerro-verde', 'Cerro Verde')">
             <div class="unidad-name">U.P. Cerro Verde</div>
             <div class="unidad-meta">
               <span>Explotación · Arequipa</span>
@@ -404,7 +404,7 @@ tr:hover td { background: var(--surface2); }
               <span class="text-xs text-muted">2 IGAs · 347 obligaciones</span>
             </div>
           </div>
-          <div class="unidad-card" onclick="selectUF(this, 'panel-nueva')">
+          <div class="unidad-card" onclick="selectUF(this, 'panel-nueva', 'Pampa Norte')">
             <div class="unidad-name">U.P. Pampa Norte</div>
             <div class="unidad-meta">
               <span>Exploración · Moquegua</span>
@@ -424,7 +424,7 @@ tr:hover td { background: var(--surface2); }
               <button class="btn btn-primary btn-sm" onclick="openModal('modal-nuevo-iga')">+ Nuevo IGA</button>
             </div>
             <div class="iga-list">
-              <div class="iga-row" onclick="goTo('consolidada')">
+              <div class="iga-row" onclick="goToConsolidada('La Querendosa', 'DIA La Querendosa')">
                 <div class="iga-tipo">DIA</div>
                 <div class="iga-info">
                   <div class="iga-nombre">DIA Proyecto Exploración Geológica La Querendosa</div>
@@ -492,7 +492,7 @@ tr:hover td { background: var(--surface2); }
           </div>
           <div class="flex gap-8">
             <button class="btn btn-secondary btn-sm">↓ Exportar Excel</button>
-            <button class="btn btn-secondary btn-sm">↓ Informe OEFA</button>
+            <button class="btn btn-secondary btn-sm">↓ Informe detallado</button>
           </div>
         </div>
 
@@ -523,6 +523,18 @@ tr:hover td { background: var(--surface2); }
           <div class="chip">IGA</div>
           <div class="chip">Normativa</div>
           <div style="margin-left:auto" class="flex gap-8">
+            <select id="filtro-uf" onchange="renderCats()" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit">
+              <option value="todas">Todas las UF</option>
+              <option value="La Querendosa">U.P. La Querendosa</option>
+              <option value="Cerro Verde">U.P. Cerro Verde</option>
+              <option value="Pampa Norte">U.P. Pampa Norte</option>
+            </select>
+            <select id="filtro-iga" onchange="renderCats()" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit">
+              <option value="todos">Todos los IGAs</option>
+              <option value="DIA La Querendosa">DIA — La Querendosa 2023</option>
+              <option value="EIA-d Cerro Verde">EIA-d — Ampliación Planta</option>
+              <option value="ITS Cerro Verde">ITS — Modificación Circuito</option>
+            </select>
             <select style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit">
               <option>Todas las etapas</option>
               <option>Construcción</option>
@@ -1128,12 +1140,31 @@ function switchTab(el, tabId) {
 }
 
 // ── UNIDADES ──
-function selectUF(card, panelId) {
-  document.querySelectorAll('.unidad-card').forEach(c=>c.classList.remove('selected'));
+function selectUF(card, panelId, ufName) {
+  document.querySelectorAll('.unidad-card').forEach(c => c.classList.remove('selected'));
   card.classList.add('selected');
-  document.querySelectorAll('[id^="panel-"]').forEach(p=>p.style.display='none');
+  document.querySelectorAll('[id^="panel-"]').forEach(p => p.style.display = 'none');
   const panel = document.getElementById(panelId);
   if (panel) panel.style.display = 'block';
+}
+
+function goToConsolidada(ufName, igaName) {
+  goTo('consolidada');
+  setTimeout(() => {
+    const selUF = document.getElementById('filtro-uf');
+    if (selUF) selUF.value = ufName || 'todas';
+
+    const selIGA = document.getElementById('filtro-iga');
+    if (selIGA) selIGA.value = igaName || 'todos';
+
+    const label = document.querySelector('#screen-consolidada .text-xs.text-muted');
+    if (label) {
+      label.textContent = ufName
+        ? 'U.P. ' + ufName + (igaName ? ' · ' + igaName : '')
+        : 'Todas las unidades';
+    }
+    renderCats();
+  }, 50);
 }
 
 function marcarCumplida() {
