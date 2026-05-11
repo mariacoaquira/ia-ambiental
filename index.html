@@ -1099,7 +1099,7 @@ let currentCats = {};
 // ── NAVEGACIÓN ──
 function goTo(screen) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  if (screen === 'dashboard' || screen === 'consolidada' || screen === 'detalle' || screen === 'alertas') {
+  if (screen === 'dashboard' || screen === 'consolidada' || screen === 'detalle' || screen === 'alertas' || screen === 'chat') {
     document.getElementById('app-shell').style.display = 'block';
     document.getElementById('screen-login').style.display = 'none';
     const el = document.getElementById('screen-' + screen);
