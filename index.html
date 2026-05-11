@@ -1037,6 +1037,7 @@ function goTo(screen) {
 
 // ── CATEGORÍAS ──
 let TODAS_OBLIGS = {}; // cache global
+let OBLIGS_FLAT  = []; // lista plana para detalle
 let filtroEstado = 'todas';
 let filtroFuente = 'todas';
 
@@ -1064,6 +1065,7 @@ async function renderCats() {
     }
 
     container.innerHTML = '';
+    OBLIGS_FLAT = []; // limpiar índices anteriores
 
     Object.entries(TODAS_OBLIGS).forEach(([cat, todasObligs]) => {
       // Aplicar filtros
@@ -1098,15 +1100,17 @@ async function renderCats() {
               </tr>
             </thead>
             <tbody>
-              ${obligs.map((o, i) => `
-                <tr style="cursor:pointer" onclick="verDetalle(${JSON.stringify(o).replace(/'/g, '&#39;')})">
+              ${obligs.map((o, i) => {
+                const idx = OBLIGS_FLAT.push(o) - 1;
+                return `<tr style="cursor:pointer" onclick="verDetalle(${idx})">
                   <td class="td-mono">${String(i+1).padStart(3,'0')}</td>
                   <td style="max-width:320px">${o.descripcion || ''}</td>
                   <td><span class="badge badge-gray">${o.etapa || '—'}</span></td>
                   <td class="text-muted" style="font-size:12px">${o.frecuencia || '—'}</td>
                   <td><span class="badge ${o.normativa ? 'badge-amber' : 'badge-blue'}">${o.normativa ? 'Normativa' : 'IGA'}</span></td>
                   <td><span class="badge badge-amber"><span class="dot"></span>Pendiente</span></td>
-                </tr>`).join('')}
+                </tr>`;
+              }).join('')}
             </tbody>
           </table>
         </div>`;
@@ -1209,7 +1213,9 @@ function goToConsolidada(ufName, igaName) {
 }
 
 // ── DETALLE DESDE DATOS REALES ──
-function verDetalle(o) {
+function verDetalle(idx) {
+  const o = OBLIGS_FLAT[idx];
+  if (!o) return;
   // Rellenar campos del detalle con datos de la obligación
   document.querySelector('#screen-detalle .text-xs.text-muted').textContent =
     (o.plan || 'Plan de Manejo Ambiental');
