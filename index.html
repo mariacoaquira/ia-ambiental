@@ -1099,6 +1099,8 @@ let currentCats = {};
 // ── NAVEGACIÓN ──
 function goTo(screen) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  // Resetear displays especiales
+  document.getElementById('screen-chat').style.display = 'none';
   if (screen === 'dashboard' || screen === 'consolidada' || screen === 'detalle' || screen === 'alertas' || screen === 'chat') {
     document.getElementById('app-shell').style.display = 'block';
     document.getElementById('screen-login').style.display = 'none';
@@ -1112,7 +1114,10 @@ function goTo(screen) {
     const navMap = {dashboard:0, consolidada:1, alertas:2, chat:3};
     if (navMap[screen] !== undefined) document.querySelectorAll('.nav-item')[navMap[screen]].classList.add('active');
     if (screen === 'consolidada') renderCats();
-    if (screen === 'chat') iniciarChat();
+    if (screen === 'chat') {
+    document.getElementById('screen-chat').style.display = 'flex';
+    iniciarChat();
+  }
   }
 }
 
@@ -1413,7 +1418,7 @@ let chatCargando  = false;
 
 function iniciarChat() {
   const pdfUrl = `${API_URL}/api/iga/pdf/DIA_La_Querendosa.pdf`;
-  document.getElementById('pdf-viewer').src = pdfUrl;
+  document.getElementById('pdf-viewer').src = `${API_URL}/api/iga/pdf/IGA.pdf`;
 }
 
 async function enviarChat() {
