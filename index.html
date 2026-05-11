@@ -285,6 +285,17 @@ tr:hover td { background: var(--surface2); }
 .w-full { width: 100%; }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+/* SIDEBAR TOGGLE */
+.sidebar { transition: width 0.25s ease; position: relative; }
+.sidebar.collapsed { width: 56px; }
+.sidebar.collapsed .sidebar-text { display: none; }
+.sidebar.collapsed .nav-item span:not(.nav-icon) { display: none; }
+.sidebar.collapsed .nav-item { justify-content: center; padding: 9px 0; }
+.sidebar.collapsed .sidebar-footer { display: none; }
+.sidebar.collapsed .badge { display: none; }
+.sidebar.collapsed #sidebar-toggle { transform: rotate(180deg); }
+.main { transition: margin-left 0.25s ease; }
+.main.collapsed { margin-left: 56px; }
 </style>
 </head>
 <body>
@@ -319,9 +330,10 @@ tr:hover td { background: var(--surface2); }
   <div class="app">
     <aside class="sidebar">
       <div class="sidebar-logo">
-        <h1>Asist. Ambiental</h1>
-        <p>CMS Grau · Panel</p>
+        <h1 class="sidebar-text">Asist. Ambiental</h1>
+        <p class="sidebar-text">CMS Grau · Panel</p>
       </div>
+      <button id="sidebar-toggle" onclick="toggleSidebar()" style="position:absolute;top:18px;right:-14px;width:28px;height:28px;border-radius:50%;background:var(--accent2);border:2px solid var(--bg);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;z-index:200;transition:all 0.2s">‹</button>
       <nav class="sidebar-nav">
         <div class="nav-item active" onclick="goTo('dashboard')">
           <span class="nav-icon">⊞</span> Dashboard
@@ -1033,6 +1045,14 @@ function goTo(screen) {
     if (navMap[screen] !== undefined) document.querySelectorAll('.nav-item')[navMap[screen]].classList.add('active');
     if (screen === 'consolidada') renderCats();
   }
+}
+
+// ── SIDEBAR TOGGLE ──
+function toggleSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const main    = document.querySelector('.main');
+  sidebar.classList.toggle('collapsed');
+  main.classList.toggle('collapsed');
 }
 
 // ── CATEGORÍAS ──
