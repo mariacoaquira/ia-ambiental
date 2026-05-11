@@ -57,6 +57,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 /* SCREENS */
 .screen { display: none; }
 .screen.active { display: block; }
+.screen.active.screen-flex { display: flex; }
 
 /* LOGIN */
 .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--bg); }
@@ -807,7 +808,7 @@ tr:hover td { background: var(--surface2); }
 </div>
 
         <!-- ============ SCREEN: CHAT IGA ============ -->
-        <div id="screen-chat" class="screen" style="padding:0;height:calc(100vh - 56px);display:flex">
+        <div id="screen-chat" class="screen screen-flex" style="padding:0;height:calc(100vh - 56px)">
           <div style="display:flex;width:100%;height:100%">
 
             <!-- Panel izquierdo: visor PDF -->
