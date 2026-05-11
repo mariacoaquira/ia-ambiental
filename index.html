@@ -34,7 +34,7 @@
 body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; }
 
 /* LAYOUT */
-.app { display: flex; min-height: 100vh; }
+.app { display: flex; min-height: 100vh; width: 100%; }
 .sidebar { width: 220px; background: var(--accent); color: #fff; display: flex; flex-direction: column; padding: 0; flex-shrink: 0; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
 .sidebar-logo { padding: 24px 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.12); }
 .sidebar-logo h1 { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.9); }
@@ -49,7 +49,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .avatar { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #fff; }
 
 .main { margin-left: 220px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
-.topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 32px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+.topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 32px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; width: 100%; }
 .topbar-title { font-size: 15px; font-weight: 600; }
 .topbar-actions { display: flex; gap: 10px; align-items: center; }
 .content { padding: 28px 32px; flex: 1; }
@@ -286,6 +286,7 @@ tr:hover td { background: var(--surface2); }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
 /* SIDEBAR TOGGLE */
+<<<<<<< Updated upstream
 .sidebar { transition: width 0.25s ease; position: relative; }
 .sidebar.collapsed { width: 56px; }
 .sidebar.collapsed .sidebar-text { display: none; }
@@ -295,6 +296,20 @@ tr:hover td { background: var(--surface2); }
 .sidebar.collapsed .badge { display: none; }
 .sidebar.collapsed #sidebar-toggle { transform: rotate(180deg); }
 .main { transition: margin-left 0.25s ease; }
+=======
+.sidebar { transition: width 0.25s ease; overflow: visible; }
+.sidebar.collapsed { width: 56px; }
+.sidebar.collapsed .sidebar-logo { padding: 24px 8px 20px; }
+.sidebar.collapsed .sidebar-text { display: none; }
+.sidebar.collapsed .nav-label { display: none; }
+.sidebar.collapsed .badge { display: none; }
+.sidebar.collapsed .nav-item { justify-content: center; padding: 12px 0; gap: 0; }
+.sidebar.collapsed .nav-icon { font-size: 18px; }
+.sidebar.collapsed .sidebar-footer { display: none; }
+#sidebar-toggle { position: absolute; top: 18px; right: -14px; width: 28px; height: 28px; border-radius: 50%; background: var(--accent2); border: 2px solid var(--bg); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; z-index: 200; transition: transform 0.25s; }
+.sidebar.collapsed #sidebar-toggle { transform: rotate(180deg); }
+.main { transition: margin-left 0.25s ease; margin-left: 220px; min-width: 0; flex: 1; }
+>>>>>>> Stashed changes
 .main.collapsed { margin-left: 56px; }
 </style>
 </head>
@@ -336,17 +351,17 @@ tr:hover td { background: var(--surface2); }
       <button id="sidebar-toggle" onclick="toggleSidebar()" style="position:absolute;top:18px;right:-14px;width:28px;height:28px;border-radius:50%;background:var(--accent2);border:2px solid var(--bg);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;z-index:200;transition:all 0.2s">‹</button>
       <nav class="sidebar-nav">
         <div class="nav-item active" onclick="goTo('dashboard')">
-          <span class="nav-icon">⊞</span> Dashboard
+          <span class="nav-icon">⊞</span> <span class="nav-label">Dashboard</span>
         </div>
         <div class="nav-item" onclick="goTo('consolidada')">
-          <span class="nav-icon">≡</span> Obligaciones
+          <span class="nav-icon">≡</span> <span class="nav-label">Obligaciones</span>
         </div>
         <div class="nav-item" onclick="goTo('alertas')">
-          <span class="nav-icon">◎</span> Alertas
+          <span class="nav-icon">◎</span> <span class="nav-label">Alertas</span>
           <span class="badge badge-red" style="margin-left:auto;font-size:10px;padding:2px 7px;">3</span>
         </div>
         <div class="nav-item" style="margin-top:auto">
-          <span class="nav-icon">⚙</span> Configuración
+          <span class="nav-icon">⚙</span> <span class="nav-label">Configuración</span>
         </div>
       </nav>
       <div class="sidebar-footer">
@@ -819,7 +834,7 @@ tr:hover td { background: var(--surface2); }
         <div class="grid-2">
           <div class="field">
             <label>Tipo de IGA *</label>
-            <select><option>DIA</option><option>ITS</option><option>EIA-sd</option><option>EIA-d</option><option>MEIA</option><option>PAMA</option><option>PCPAM</option></select>
+            <select id="select-tipo-iga"><option>DIA</option>
           </div>
           <div class="field">
             <label>Unidad fiscalizable *</label>
@@ -828,7 +843,7 @@ tr:hover td { background: var(--surface2); }
         </div>
         <div class="field">
           <label>Nombre del instrumento *</label>
-          <input type="text" placeholder="Ej: DIA Proyecto Exploración Geológica La Querendosa">
+          <input type="text" id="input-nombre-iga" placeholder="Ej: DIA Proyecto Exploración Geológica La Querendosa">
         </div>
         <div class="grid-2">
           <div class="field">
@@ -854,10 +869,14 @@ tr:hover td { background: var(--surface2); }
 
       <!-- Paso 2: Upload -->
       <div id="modal-step-2">
-        <div class="evidencia-box mb-16" style="padding:40px" onclick="simulateUpload()">
+        <input type="file" id="pdf-input" accept=".pdf"
+          style="display:none"
+          onchange="document.getElementById('pdf-nombre').textContent = this.files[0]?.name || ''">
+        <div class="evidencia-box mb-16" style="padding:40px"
+          onclick="document.getElementById('pdf-input').click()">
           <div class="evidencia-icon">📄</div>
-          <div class="evidencia-text">Arrastra el PDF del IGA aquí</div>
-          <div class="evidencia-sub">o haz clic para seleccionar · PDF · máx 500MB</div>
+          <div class="evidencia-text">Haz clic para seleccionar el PDF del IGA</div>
+          <div class="evidencia-sub" id="pdf-nombre">PDF · máx 500MB</div>
         </div>
         <div id="upload-progress" style="display:none">
           <div class="flex items-center gap-10 mb-8">
@@ -1180,18 +1199,87 @@ function setStep(n) {
   document.getElementById('btn-next-step').textContent = labels[n];
 }
 
-function simulateUpload() {
+let JOB_ID_ACTUAL = null;
+
+async function simulateUpload() {
+  // Verificar que hay archivo seleccionado
+  const fileInput = document.getElementById('pdf-input');
+  if (!fileInput || !fileInput.files[0]) {
+    alert('Por favor selecciona un archivo PDF primero.');
+    return;
+  }
+
   document.getElementById('upload-progress').style.display = 'block';
-  let p = 0;
   const fill = document.getElementById('prog-fill');
-  const pct = document.getElementById('upload-pct');
-  const msgs = ['Leyendo PDF...','Procesando con Document AI...','Extrayendo con Claude...','Estructurando obligaciones...','¡Listo!'];
-  const iv = setInterval(() => {
-    p += 4;
-    fill.style.width = Math.min(p,100) + '%';
-    pct.textContent = msgs[Math.floor(p/25)] || '¡Listo!';
-    if (p >= 100) { clearInterval(iv); setTimeout(()=>setStep(3),600); }
-  }, 80);
+  const pct  = document.getElementById('upload-pct');
+
+  // Preparar el form con el archivo
+  const formData = new FormData();
+  formData.append('archivo',   fileInput.files[0]);
+  formData.append('tipo_iga',  document.getElementById('select-tipo-iga')?.value || 'DIA');
+  formData.append('nombre_iga', document.getElementById('input-nombre-iga')?.value || fileInput.files[0].name);
+
+  try {
+    // Paso 1 — subir archivo
+    pct.textContent  = 'Subiendo archivo...';
+    fill.style.width = '10%';
+
+    const res = await fetch(`${API_URL}/api/iga/procesar`, {
+      method: 'POST',
+      body:   formData
+    });
+
+    if (!res.ok) throw new Error('Error al subir el archivo');
+    const { job_id } = await res.json();
+    JOB_ID_ACTUAL = job_id;
+
+    // Paso 2 — polling del estado cada 5 segundos
+    const poll = setInterval(async () => {
+      try {
+        const r    = await fetch(`${API_URL}/api/jobs/${job_id}`);
+        const job  = await r.json();
+
+        fill.style.width = (job.progreso || 0) + '%';
+        pct.textContent  = job.paso || 'Procesando...';
+
+        if (job.status === 'completado') {
+          clearInterval(poll);
+          fill.style.width = '100%';
+          pct.textContent  = `✓ ${job.total} obligaciones extraídas`;
+          setTimeout(() => cargarPreviewDesdeJob(job_id), 800);
+        }
+
+        if (job.status === 'error') {
+          clearInterval(poll);
+          pct.textContent  = '✗ Error: ' + job.mensaje;
+          fill.style.width = '0%';
+          fill.style.background = 'var(--red)';
+        }
+
+      } catch (e) {
+        console.error('Error en polling:', e);
+      }
+    }, 5000);
+
+  } catch (err) {
+    pct.textContent  = '✗ Error: ' + err.message;
+    fill.style.width = '0%';
+  }
+}
+
+async function cargarPreviewDesdeJob(job_id) {
+  try {
+    const res  = await fetch(`${API_URL}/api/jobs/${job_id}/obligaciones`);
+    const data = await res.json();
+
+    // Guardar en caché global para la vista consolidada
+    TODAS_OBLIGS  = data.por_categoria || {};
+    JOB_ID_ACTUAL = job_id;
+
+    setStep(3); // ir al preview
+  } catch (e) {
+    console.error('Error cargando obligaciones del job:', e);
+  }
 }
 
 // ── TABS DETALLE ──

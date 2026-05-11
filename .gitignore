@@ -1,0 +1,13 @@
+# Credenciales — nunca subir
+service_account.json
+.env
+
+# Python
+__pycache__/
+venv/
+*.pyc
+
+# Archivos locales
+error_temporal.txt
+cache_categorias/
+pdfs/
