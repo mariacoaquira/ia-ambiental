@@ -1,13 +1,18 @@
-# Credenciales — nunca subir
+# Backend — no subir a GitHub
+main.py
+chatbot.py
+extractor.py
+pipeline.py
+requirements.txt
+Dockerfile
+obligaciones_iga.json
 service_account.json
 .env
-
-# Python
-__pycache__/
-venv/
-*.pyc
-
-# Archivos locales
 error_temporal.txt
+__pycache__/
 cache_categorias/
+venv/
 pdfs/
+jobs/
+uploads/
+*.pyc
