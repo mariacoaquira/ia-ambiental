@@ -1,0 +1,10 @@
+# Solo ignorar estos en el deploy a Cloud Run
+venv/
+__pycache__/
+*.pyc
+pdfs/
+cache_categorias/
+jobs/
+uploads/
+.env
+service_account.json
