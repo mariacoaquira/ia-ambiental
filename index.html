@@ -806,56 +806,44 @@ tr:hover td { background: var(--surface2); }
           </div>
           <span class="badge badge-green">Cumplida</span>
 </div>
-
-        <!-- ============ SCREEN: CHAT IGA ============ -->
-        <div id="screen-chat" class="screen" style="padding:0;display:none;position:fixed;top:56px;left:220px;right:0;bottom:0;z-index:10;background:var(--bg)">
-          <div style="display:flex;width:100%;height:100%">
-
-            <!-- Panel izquierdo: visor PDF -->
-            <div style="flex:1;border-right:1px solid var(--border);display:flex;flex-direction:column;min-width:0">
-              <div style="padding:12px 16px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
-                <div style="font-size:13px;font-weight:600">DIA La Querendosa 2023</div>
-                <div style="font-size:12px;color:var(--text3)">Documento oficial</div>
-              </div>
-              <iframe id="pdf-viewer" style="flex:1;width:100%;border:none" src=""></iframe>
-            </div>
-
-            <!-- Panel derecho: chat -->
-            <div style="width:420px;flex-shrink:0;display:flex;flex-direction:column;background:var(--surface)">
-              <div style="padding:14px 18px;border-bottom:1px solid var(--border);background:var(--surface2);flex-shrink:0">
-                <div style="font-size:13px;font-weight:600">Chat con el IGA</div>
-                <div style="font-size:11px;color:var(--text3);margin-top:2px">Haz preguntas sobre el documento</div>
-              </div>
-
-              <!-- Mensajes -->
-              <div id="chat-mensajes" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px">
-                <div style="text-align:center;color:var(--text3);font-size:12px;padding:20px 0">
-                  Haz una pregunta sobre el IGA para comenzar
-                </div>
-              </div>
-
-              <!-- Input -->
-              <div style="padding:14px 16px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0">
-                <div style="display:flex;gap:8px;align-items:flex-end">
-                  <textarea id="chat-input"
-                    placeholder="Escribe tu pregunta sobre el IGA..."
-                    style="flex:1;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;resize:none;min-height:42px;max-height:120px;outline:none;line-height:1.4"
-                    onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();enviarChat()}"
-                    oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'">
-                  </textarea>
-                  <button onclick="enviarChat()"
-                    style="padding:10px 16px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;white-space:nowrap;height:42px">
-                    Enviar
-                  </button>
-                </div>
-                <div style="font-size:11px;color:var(--text3);margin-top:6px">Enter para enviar · Shift+Enter para nueva línea</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
     </main>
+  </div>
+</div>
+
+<!-- CHAT IGA — fuera del app-shell para evitar conflictos de CSS -->
+<div id="screen-chat" style="display:none;position:fixed;top:56px;left:220px;right:0;bottom:0;z-index:10;background:var(--bg)">
+  <div style="display:flex;width:100%;height:100%">
+    <div style="flex:1;border-right:1px solid var(--border);display:flex;flex-direction:column;min-width:0">
+      <div style="padding:12px 16px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+        <div style="font-size:13px;font-weight:600">DIA La Querendosa 2023</div>
+        <div style="font-size:12px;color:var(--text3)">Documento oficial</div>
+      </div>
+      <iframe id="pdf-viewer" style="flex:1;width:100%;border:none" src=""></iframe>
+    </div>
+    <div style="width:420px;flex-shrink:0;display:flex;flex-direction:column;background:var(--surface);border-left:1px solid var(--border)">
+      <div style="padding:14px 18px;border-bottom:1px solid var(--border);background:var(--surface2);flex-shrink:0">
+        <div style="font-size:13px;font-weight:600">Chat con el IGA</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">Haz preguntas sobre el documento</div>
+      </div>
+      <div id="chat-mensajes" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px">
+        <div style="text-align:center;color:var(--text3);font-size:12px;padding:20px 0">
+          Haz una pregunta sobre el IGA para comenzar
+        </div>
+      </div>
+      <div style="padding:14px 16px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0">
+        <div style="display:flex;gap:8px;align-items:flex-end">
+          <textarea id="chat-input" placeholder="Escribe tu pregunta sobre el IGA..."
+            style="flex:1;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;resize:none;min-height:42px;max-height:120px;outline:none;line-height:1.4"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();enviarChat()}"
+            oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'">
+          </textarea>
+          <button onclick="enviarChat()" style="padding:10px 16px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;white-space:nowrap;height:42px">
+            Enviar
+          </button>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px">Enter para enviar · Shift+Enter para nueva línea</div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1098,25 +1086,35 @@ let currentCats = {};
 
 // ── NAVEGACIÓN ──
 function goTo(screen) {
+  // Ocultar chat si vamos a otra pantalla
+  document.getElementById('screen-chat').style.display = 'none';
+
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  if (screen === 'dashboard' || screen === 'consolidada' || screen === 'detalle' || screen === 'alertas' || screen === 'chat') {
+
+  if (screen === 'chat') {
+    document.getElementById('app-shell').style.display = 'block';
+    document.getElementById('screen-login').style.display = 'none';
+    document.getElementById('screen-chat').style.display = 'flex';
+    document.getElementById('topbar-title').textContent = 'Chat con el IGA';
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('.nav-item')[3].classList.add('active');
+    iniciarChat();
+    return;
+  }
+
+  if (screen === 'dashboard' || screen === 'consolidada' || screen === 'detalle' || screen === 'alertas') {
     document.getElementById('app-shell').style.display = 'block';
     document.getElementById('screen-login').style.display = 'none';
     const el = document.getElementById('screen-' + screen);
     if (el) el.classList.add('active');
     document.getElementById('topbar-title').textContent = {
       dashboard: 'Dashboard', consolidada: 'Obligaciones consolidadas',
-      detalle: 'Detalle de obligación', alertas: 'Alertas', chat: 'Chat con el IGA'
+      detalle: 'Detalle de obligación', alertas: 'Alertas'
     }[screen] || '';
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    const navMap = {dashboard:0, consolidada:1, alertas:2, chat:3};
+    const navMap = {dashboard:0, consolidada:1, alertas:2};
     if (navMap[screen] !== undefined) document.querySelectorAll('.nav-item')[navMap[screen]].classList.add('active');
     if (screen === 'consolidada') renderCats();
-    if (screen === 'chat') {
-      document.getElementById('screen-chat').style.display = 'flex';
-      document.getElementById('screen-chat').classList.add('active');
-      iniciarChat();
-    }
   }
 }
 
