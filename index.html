@@ -808,7 +808,7 @@ tr:hover td { background: var(--surface2); }
 </div>
 
         <!-- ============ SCREEN: CHAT IGA ============ -->
-        <div id="screen-chat" class="screen screen-flex" style="padding:0;height:calc(100vh - 56px)">
+        <div id="screen-chat" class="screen" style="padding:0;height:calc(100vh - 56px);display:none">
           <div style="display:flex;width:100%;height:100%">
 
             <!-- Panel izquierdo: visor PDF -->
@@ -1099,8 +1099,6 @@ let currentCats = {};
 // ── NAVEGACIÓN ──
 function goTo(screen) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  // Resetear displays especiales
-  document.getElementById('screen-chat').style.display = 'none';
   if (screen === 'dashboard' || screen === 'consolidada' || screen === 'detalle' || screen === 'alertas' || screen === 'chat') {
     document.getElementById('app-shell').style.display = 'block';
     document.getElementById('screen-login').style.display = 'none';
@@ -1115,9 +1113,10 @@ function goTo(screen) {
     if (navMap[screen] !== undefined) document.querySelectorAll('.nav-item')[navMap[screen]].classList.add('active');
     if (screen === 'consolidada') renderCats();
     if (screen === 'chat') {
-    document.getElementById('screen-chat').style.display = 'flex';
-    iniciarChat();
-  }
+      document.getElementById('screen-chat').style.display = 'flex';
+      document.getElementById('screen-chat').classList.add('active');
+      iniciarChat();
+    }
   }
 }
 
