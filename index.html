@@ -1467,7 +1467,10 @@ function agregarMensaje(role, texto, temporal=false, fuentes=[]) {
   div.id    = id;
   div.style.cssText = `display:flex;justify-content:${esUser?'flex-end':'flex-start'}`;
   div.innerHTML = `<div style="max-width:85%;padding:10px 14px;border-radius:${esUser?'14px 14px 4px 14px':'14px 14px 14px 4px'};background:${esUser?'var(--accent)':'var(--surface2)'};color:${esUser?'#fff':'var(--text)'};font-size:13px;line-height:1.5;border:${esUser?'none':'1px solid var(--border)'};${temporal?'opacity:0.6;font-style:italic':''}">
-    ${texto.replace(/\n/g,'<br>')}${fuentesHtml}
+    ${texto
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/\n/g,'<br>')}${fuentesHtml}
   </div>`;
   container.appendChild(div);
   container.scrollTop = container.scrollHeight;
