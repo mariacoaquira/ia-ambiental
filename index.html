@@ -1230,8 +1230,31 @@ function closeModal(id) { document.getElementById(id).classList.remove('open'); 
 // ── STEPPER MODAL ──
 function nextStep() {
   if (currentStep === 2) { simulateUpload(); return; }
-  if (currentStep === 3) { setStep(4); document.getElementById('btn-next-step').textContent = '✓ Confirmar e ingresar'; return; }
-  if (currentStep === 4) { closeModal('modal-nuevo-iga'); goTo('consolidada'); return; }
+  if (currentStep === 3) {
+    // Actualizar paso 4 con datos reales
+    const total = Object.values(TODAS_OBLIGS).flat().length;
+    const cats  = Object.keys(TODAS_OBLIGS).length;
+    const nombre = document.getElementById('input-nombre-iga')?.value || 'IGA procesado';
+    const tipo   = document.getElementById('select-tipo-iga')?.value || 'DIA';
+
+    const resumen = document.querySelector('#modal-step-4 .grid-2');
+    if (resumen) {
+      resumen.innerHTML = `
+        <div><div class="text-xs text-muted">IGA</div><div class="text-sm font-600">${tipo} · ${nombre}</div></div>
+        <div><div class="text-xs text-muted">Obligaciones extraídas</div><div class="text-sm font-600">${total}</div></div>
+        <div><div class="text-xs text-muted">Categorías</div><div class="text-sm font-600">${cats}</div></div>
+        <div><div class="text-xs text-muted">Estado</div><div class="text-sm font-600">Listo para ingresar</div></div>`;
+    }
+    setStep(4);
+    document.getElementById('btn-next-step').textContent = '✓ Confirmar e ingresar';
+    return;
+  }
+  if (currentStep === 4) {
+    closeModal('modal-nuevo-iga');
+    TODAS_OBLIGS = {}; // forzar recarga desde API
+    goTo('consolidada');
+    return;
+  }
 }
 function prevStep() {
   if (currentStep > 1) setStep(currentStep - 1);
@@ -1323,14 +1346,41 @@ async function cargarPreviewDesdeJob(job_id) {
   try {
     const res  = await fetch(`${API_URL}/api/jobs/${job_id}/obligaciones`);
     const data = await res.json();
-
-    // Guardar en caché global para la vista consolidada
     TODAS_OBLIGS  = data.por_categoria || {};
     JOB_ID_ACTUAL = job_id;
 
-    setStep(3); // ir al preview
+    // Construir preview dinámico con obligaciones reales
+    const previewContainer = document.querySelector('#modal-step-3 .preview-table');
+    if (previewContainer) {
+      const todasObligs = Object.values(TODAS_OBLIGS).flat();
+      const total       = todasObligs.length;
+      const muestra     = todasObligs.slice(0, 5);
+
+      previewContainer.innerHTML = muestra.map(o => `
+        <div class="preview-row">
+          <div class="preview-check"><input type="checkbox" checked></div>
+          <div class="preview-body">
+            <div class="preview-desc">${o.descripcion || ''}</div>
+            <div class="preview-tags">
+              <span class="preview-tag">${o.etapa || '—'}</span>
+              <span class="preview-tag">${o.frecuencia || '—'}</span>
+              <span class="preview-tag">${o.componente || 'IGA'}</span>
+            </div>
+          </div>
+        </div>`).join('') +
+        `<p class="text-xs text-muted mt-12">
+          Mostrando 5 de ${total} obligaciones extraídas
+        </p>`;
+
+      // Ocultar el banner de actualizaciones si no hay IGA anterior
+      const banner = document.querySelector('#modal-step-3 .update-banner');
+      if (banner) banner.style.display = 'none';
+    }
+
+    setStep(3);
   } catch (e) {
     console.error('Error cargando obligaciones del job:', e);
+    alert('Error al cargar el preview de obligaciones.');
   }
 }
 
@@ -1488,6 +1538,94 @@ document.querySelectorAll('.chip').forEach(c => {
     this.classList.add('active');
   });
 });
-</script>
+
+// --- NUEVO CÓDIGO PARA PROCESAMIENTO DE IGA ---
+    
+    async function subirYProcesarIGA(event) {
+        if(event) event.preventDefault();
+        
+        const fileInput = document.getElementById('input-archivo-iga'); 
+        const tipoIga = document.getElementById('input-tipo-iga').value; 
+        const nombreIga = document.getElementById('input-nombre-iga').value;
+        
+        if (!fileInput.files.length) {
+            alert("Por favor, selecciona un archivo PDF.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("archivo", fileInput.files[0]);
+        formData.append("tipo_iga", tipoIga);
+        formData.append("nombre_iga", nombreIga);
+        formData.append("unidad_id", "uf-001");
+
+        try {
+            document.getElementById('processing-container').style.display = 'block'; 
+            
+            const response = await fetch('http://localhost:8000/api/iga/procesar', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                monitorearJob(data.job_id);
+            } else {
+                alert("Error: " + data.error);
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Error de conexión con el servidor.");
+        }
+    }
+
+    function monitorearJob(jobId) {
+        const progressBar = document.getElementById('progress-bar-fill');
+        const progressText = document.getElementById('progress-text');
+
+        const pollInterval = setInterval(async () => {
+            try {
+                const res = await fetch(`http://localhost:8000/api/jobs/${jobId}`);
+                const job = await res.json();
+
+                if (job.status === 'procesando' || job.status === 'iniciando') {
+                    progressBar.style.width = job.progreso + '%';
+                    progressText.textContent = job.paso + '...';
+                } 
+                else if (job.status === 'completado') {
+                    clearInterval(pollInterval);
+                    progressBar.style.width = '100%';
+                    progressText.textContent = '¡Extracción completada!';
+                    cargarObligaciones(jobId);
+                } 
+                else if (job.status === 'error') {
+                    clearInterval(pollInterval);
+                    progressBar.style.backgroundColor = 'var(--red)';
+                    progressText.textContent = 'Error: ' + job.mensaje;
+                }
+            } catch (error) {
+                console.error("Error al consultar job:", error);
+                clearInterval(pollInterval);
+            }
+        }, 3000);
+    }
+
+    async function cargarObligaciones(jobId) {
+        try {
+            const res = await fetch(`http://localhost:8000/api/jobs/${jobId}/obligaciones`);
+            const data = await res.json();
+            
+            console.log("Obligaciones obtenidas:", data);
+            
+            // Aquí debes llamar a la función que actualiza tu tabla de obligaciones
+            // cambiarPantalla('consolidada'); 
+            // renderizarTablaObligaciones(data); 
+
+        } catch (error) {
+            console.error("Error al obtener obligaciones:", error);
+        }
+    }
+  </script>
 </body>
 </html>
