@@ -1646,12 +1646,16 @@ document.querySelectorAll('.chip').forEach(c => {
                     progressBar.style.width = job.progreso + '%';
                     progressText.textContent = job.paso + '...';
                 } 
+                // Busca esta parte:
                 else if (job.status === 'completado') {
                     clearInterval(pollInterval);
                     progressBar.style.width = '100%';
                     progressText.textContent = '¡Extracción completada!';
-                    cargarObligaciones(jobId);
-                } 
+                    
+                    // BORRA o COMENTA cargarObligaciones(jobId);
+                    // Y pon esto para que el Modal visual avance al Paso 3 (Preview):
+                    cargarPreviewDesdeJob(jobId);
+                }
                 else if (job.status === 'error') {
                     clearInterval(pollInterval);
                     progressBar.style.backgroundColor = 'var(--red)';
