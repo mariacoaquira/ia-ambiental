@@ -211,11 +211,11 @@ tr:hover td { background: var(--surface2); }
 /* MODAL */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 200; display: none; align-items: center; justify-content: center; }
 .modal-overlay.open { display: flex; }
-.modal { background: var(--surface); border-radius: 14px; width: 680px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg); }
-.modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--surface); z-index: 10; }
+.modal { background: var(--surface); border-radius: 14px; width: 680px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: var(--shadow-lg); }
+.modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--surface); z-index: 10; flex-shrink: 0; }
 .modal-title { font-size: 16px; font-weight: 600; }
-.modal-body { padding: 24px; }
-.modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; position: sticky; bottom: 0; background: var(--surface); }
+.modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+.modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--surface); flex-shrink: 0; }
 .close-btn { background: none; border: none; cursor: pointer; color: var(--text2); font-size: 18px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px; }
 .close-btn:hover { background: var(--surface2); }
 
@@ -915,17 +915,23 @@ tr:hover td { background: var(--surface2); }
       <!-- Paso 2: Upload -->
       <div id="modal-step-2">
         <input type="file" id="pdf-input" accept=".pdf"
-          style="display:none"
+          style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"
           onchange="
-            document.getElementById('pdf-nombre').textContent = this.files[0]?.name || '';
-            document.getElementById('upload-filename').textContent = this.files[0]?.name || 'Archivo seleccionado';
-          "
-        <div class="evidencia-box mb-16" style="padding:40px;cursor:pointer"
-          onclick="seleccionarPDF()">
-          <div class="evidencia-icon">📄</div>
+            const name = this.files[0]?.name || '';
+            document.getElementById('pdf-nombre').textContent = name || 'PDF · máx 500MB';
+            document.getElementById('upload-filename').textContent = name || 'Archivo seleccionado';
+            if (name) {
+              const box = document.getElementById('pdf-upload-box');
+              box.style.borderColor = 'var(--accent)';
+              box.style.background = 'var(--accent-light)';
+              document.getElementById('pdf-upload-icon').textContent = '✅';
+            }
+          ">
+        <label for="pdf-input" id="pdf-upload-box" class="evidencia-box mb-16" style="padding:40px;cursor:pointer;display:block">
+          <div class="evidencia-icon" id="pdf-upload-icon">📄</div>
           <div class="evidencia-text">Haz clic para seleccionar el PDF del IGA</div>
-          <div class="evidencia-sub" id="pdf-nombre">PDF · máx 500MB</div>
-        </div>
+          <div class="evidencia-sub" id="pdf-nombre">PDF · máx 500MB · o arrastra y suelta aquí</div>
+        </label>
         <div id="upload-progress" style="display:none">
           <div class="flex items-center gap-10 mb-8">
             <span class="text-sm" id="upload-filename">Archivo seleccionado</span>
@@ -1235,8 +1241,39 @@ function toggleCat(cat, header) {
 }
 
 // ── MODAL ──
-function openModal(id) { document.getElementById(id).classList.add('open'); }
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  if (id === 'modal-nuevo-iga') initUploadDragDrop();
+}
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function initUploadDragDrop() {
+  const box   = document.getElementById('pdf-upload-box');
+  const input = document.getElementById('pdf-input');
+  if (!box || !input || box._ddReady) return;
+  box._ddReady = true;
+
+  ['dragenter','dragover'].forEach(e => box.addEventListener(e, ev => {
+    ev.preventDefault();
+    box.style.borderColor = 'var(--accent)';
+    box.style.background  = 'var(--accent-light)';
+  }));
+  ['dragleave','dragend'].forEach(e => box.addEventListener(e, () => {
+    if (!input.files[0]) { box.style.borderColor = ''; box.style.background = ''; }
+  }));
+  box.addEventListener('drop', ev => {
+    ev.preventDefault();
+    const file = ev.dataTransfer.files[0];
+    if (file && file.name.toLowerCase().endsWith('.pdf')) {
+      const dt = new DataTransfer(); dt.items.add(file); input.files = dt.files;
+      document.getElementById('pdf-nombre').textContent = file.name;
+      document.getElementById('upload-filename').textContent = file.name;
+      document.getElementById('pdf-upload-icon').textContent = '✅';
+      box.style.borderColor = 'var(--accent)';
+      box.style.background  = 'var(--accent-light)';
+    } else { alert('Solo se aceptan archivos PDF.'); }
+  });
+}
 
 // ── STEPPER MODAL ──
 function nextStep() {
