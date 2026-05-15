@@ -908,7 +908,10 @@ tr:hover td { background: var(--surface2); }
       <div id="modal-step-2">
         <input type="file" id="pdf-input" accept=".pdf"
           style="display:none"
-          onchange="document.getElementById('pdf-nombre').textContent = this.files[0]?.name || ''">
+          onchange="
+            document.getElementById('pdf-nombre').textContent = this.files[0]?.name || '';
+            document.getElementById('upload-filename').textContent = this.files[0]?.name || 'Archivo seleccionado';
+          "
         <div class="evidencia-box mb-16" style="padding:40px"
           onclick="document.getElementById('pdf-input').click()">
           <div class="evidencia-icon">📄</div>
@@ -917,7 +920,7 @@ tr:hover td { background: var(--surface2); }
         </div>
         <div id="upload-progress" style="display:none">
           <div class="flex items-center gap-10 mb-8">
-            <span class="text-sm">DIA_La_Querendosa_2023.pdf</span>
+            <span class="text-sm" id="upload-filename">Archivo seleccionado</span>
             <span class="text-xs text-muted" id="upload-pct" style="margin-left:auto">Procesando con IA...</span>
           </div>
           <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
