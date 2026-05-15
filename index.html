@@ -920,8 +920,8 @@ tr:hover td { background: var(--surface2); }
             document.getElementById('pdf-nombre').textContent = this.files[0]?.name || '';
             document.getElementById('upload-filename').textContent = this.files[0]?.name || 'Archivo seleccionado';
           "
-        <div class="evidencia-box mb-16" style="padding:40px"
-          onclick="document.getElementById('pdf-input').click()">
+        <div class="evidencia-box mb-16" style="padding:40px;cursor:pointer"
+          onclick="seleccionarPDF()">
           <div class="evidencia-icon">📄</div>
           <div class="evidencia-text">Haz clic para seleccionar el PDF del IGA</div>
           <div class="evidencia-sub" id="pdf-nombre">PDF · máx 500MB</div>
@@ -1006,7 +1006,7 @@ tr:hover td { background: var(--surface2); }
         <p class="text-sm text-muted">Las obligaciones se agregarán a la vista consolidada de la unidad fiscalizable. Las obligaciones anteriores actualizadas quedarán en el historial.</p>
       </div>
     </div>
-    <div class="modal-footer">
+    <div class="modal-footer" style="display:flex;justify-content:flex-end;gap:10px;padding:16px 24px;border-top:1px solid var(--border);background:var(--surface);position:sticky;bottom:0">
       <button class="btn btn-secondary" onclick="prevStep()">← Anterior</button>
       <button class="btn btn-primary" id="btn-next-step" onclick="nextStep()">Procesar IGA →</button>
     </div>
@@ -1283,6 +1283,11 @@ function setStep(n) {
   }
   const labels = ['', 'Siguiente →', 'Procesar IGA →', 'Confirmar →', '✓ Ingresar obligaciones'];
   document.getElementById('btn-next-step').textContent = labels[n];
+}
+
+function seleccionarPDF() {
+  const input = document.getElementById('pdf-input');
+  if (input) input.click();
 }
 
 let JOB_ID_ACTUAL = null;
