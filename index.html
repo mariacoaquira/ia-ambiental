@@ -1615,7 +1615,7 @@ document.querySelectorAll('.chip').forEach(c => {
         try {
             document.getElementById('processing-container').style.display = 'block'; 
             
-            const response = await fetch('http://localhost:8000/api/iga/procesar', {
+            const response = await fetch(`${API_URL}/api/iga/procesar`, {
                 method: 'POST',
                 body: formData
             });
@@ -1639,7 +1639,7 @@ document.querySelectorAll('.chip').forEach(c => {
 
         const pollInterval = setInterval(async () => {
             try {
-                const res = await fetch(`http://localhost:8000/api/jobs/${jobId}`);
+                const res = await fetch(`${API_URL}/api/jobs/${jobId}`);
                 const job = await res.json();
 
                 if (job.status === 'procesando' || job.status === 'iniciando') {
@@ -1666,7 +1666,7 @@ document.querySelectorAll('.chip').forEach(c => {
 
     async function cargarObligaciones(jobId) {
         try {
-            const res = await fetch(`http://localhost:8000/api/jobs/${jobId}/obligaciones`);
+            const res = await fetch(`${API_URL}/api/jobs/${jobId}/obligaciones`);
             const data = await res.json();
             
             console.log("Obligaciones obtenidas:", data);
