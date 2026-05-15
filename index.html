@@ -1352,7 +1352,7 @@ async function simulateUpload() {
     pct.textContent  = 'Subiendo archivo...';
     fill.style.width = '10%';
     
-    const response = await fetch(`${API_URL}/api/iga/procesar`, {
+    const res = await fetch(`${API_URL}/api/iga/procesar`, {
       method: "POST",
       body: formData
     });
