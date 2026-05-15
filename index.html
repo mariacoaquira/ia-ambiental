@@ -1095,7 +1095,7 @@ const OBLIGACIONES = {
 };
 
 // ── API ──
-const API_URL = 'https://asistente-ambiental-api-608628180425.us-central1.run.app';
+const API_URL = "https://asistente-ambiental-api-608628180425.us-central1.run.app";
 
 // ── ESTADO ──
 let currentStep = 2;
@@ -1351,10 +1351,10 @@ async function simulateUpload() {
     // Paso 1 — subir archivo
     pct.textContent  = 'Subiendo archivo...';
     fill.style.width = '10%';
-
-    const res = await fetch(`${API_URL}/api/iga/procesar`, {
-      method: 'POST',
-      body:   formData
+    
+    const res = await fetch(`${API_URL}/api/procesar-iga`, { // ¡Asegúrate de que el nombre coincida!
+      method: "POST",
+      body: formData
     });
 
     if (!res.ok) throw new Error('Error al subir el archivo');
@@ -1615,7 +1615,7 @@ document.querySelectorAll('.chip').forEach(c => {
         try {
             document.getElementById('processing-container').style.display = 'block'; 
             
-            const response = await fetch(`${API_URL}/api/iga/procesar`, {
+            const response = await fetch(`${API_URL}/api/procesar-iga`, {
                 method: 'POST',
                 body: formData
             });
