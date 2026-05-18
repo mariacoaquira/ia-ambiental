@@ -1,18 +1,25 @@
-# Backend — no subir a GitHub
-main.py
-chatbot.py
-extractor.py
-pipeline.py
-requirements.txt
-Dockerfile
-obligaciones_iga.json
-service_account.json
+# Credenciales y secretos — NUNCA subir
+*.json
+!obligaciones_iga.json
 .env
-error_temporal.txt
+.env.*
+*credentials*
+*service_account*
+gcp_*.json
+
+# Python
 __pycache__/
-cache_categorias/
+*.py[cod]
 venv/
-pdfs/
-jobs/
+.venv/
+*.egg-info/
+
+# Archivos temporales del pipeline
 uploads/
-*.pyc
+jobs/
+*.jsonl
+*.pdf
+
+# Sistema
+.DS_Store
+Thumbs.db

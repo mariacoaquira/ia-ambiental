@@ -1,0 +1,30 @@
+[
+  {
+    "descripcion": "Remover la vegetación en el ancho mínimo necesario para la construcción del acceso.",
+    "plan": "Plan de Manejo Ambiental",
+    "etapa": "Construcción",
+    "frecuencia": "Según cronograma aprobado",
+    "componente": "Accesos",
+    "evidencia_cumplimiento": null,
+    "responsable": null,
+    "a_quien_reporta": null,
+    "normativa": null,
+    "parametros": "ancho mínimo necesario"
+  },
+  {
+    "descripcion": "Realizar las actividades de rehabilitación progresivamente a medida que se culminan los trabajos de exploración, evitando mantener áreas disturbadas.",
+    "plan": "Plan de Manejo Ambiental",
+    "etapa": "Todas las etapas",
+    "frecuencia": "Permanente",
+    "componente": "Áreas disturbadas (accesos y plataformas)",
+    "evidencia_cumplimiento": null,
+    "responsable": null,
+    "a_quien_reporta": null,
+    "normativa": null,
+    "parametros": null
+  },
+  {
+    "descripcion": "Minimizar el movimiento de tierra durante la nivelación de la plataforma.",
+    "plan": "Plan de Manejo Ambiental",
+    "etapa": "Construcción",
+    "
