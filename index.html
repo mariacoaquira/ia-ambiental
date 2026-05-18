@@ -1098,7 +1098,7 @@ const OBLIGACIONES = {
 const API_URL = 'https://ia-ambiental-production-0b43.up.railway.app';
 
 // ── ESTADO ──
-let currentStep = 2;
+let currentStep = 1;
 let currentCats = {};
 
 // ── NAVEGACIÓN ──
@@ -1243,7 +1243,16 @@ function toggleCat(cat, header) {
 // ── MODAL ──
 function openModal(id) {
   document.getElementById(id).classList.add('open');
-  if (id === 'modal-nuevo-iga') initUploadDragDrop();
+  if (id === 'modal-nuevo-iga') {
+    setStep(1);
+    document.getElementById('upload-progress').style.display = 'none';
+    document.getElementById('prog-fill').style.width = '0%';
+    document.getElementById('pdf-upload-icon').textContent = '📄';
+    document.getElementById('pdf-nombre').textContent = 'PDF · máx 500MB · o arrastra y suelta aquí';
+    document.getElementById('pdf-upload-box').style.borderColor = '';
+    document.getElementById('pdf-upload-box').style.background = '';
+    initUploadDragDrop();
+  }
 }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
@@ -1277,6 +1286,12 @@ function initUploadDragDrop() {
 
 // ── STEPPER MODAL ──
 function nextStep() {
+  if (currentStep === 1) {
+    const nombre = document.getElementById('input-nombre-iga')?.value?.trim();
+    if (!nombre) { alert('Por favor ingresa el nombre del instrumento.'); return; }
+    setStep(2);
+    return;
+  }
   if (currentStep === 2) { simulateUpload(); return; }
   if (currentStep === 3) {
     // Actualizar paso 4 con datos reales
@@ -1305,7 +1320,13 @@ function nextStep() {
   }
 }
 function prevStep() {
-  if (currentStep > 1) setStep(currentStep - 1);
+  if (currentStep > 1) {
+    setStep(currentStep - 1);
+    if (currentStep === 2) {
+      document.getElementById('upload-progress').style.display = 'none';
+      document.getElementById('prog-fill').style.width = '0%';
+    }
+  }
 }
 function setStep(n) {
   currentStep = n;
@@ -1373,7 +1394,7 @@ async function simulateUpload() {
         if (job.status === 'completado') {
           clearInterval(poll);
           fill.style.width = '100%';
-          pct.textContent  = `✓ ${job.total} obligaciones extraídas`;
+          pct.textContent = `✓ ${job.total || 0} obligaciones extraídas`;
           setTimeout(() => cargarPreviewDesdeJob(job_id), 800);
         }
 
