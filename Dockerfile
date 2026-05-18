@@ -11,4 +11,4 @@ COPY extractor.py .
 COPY pipeline.py .
 COPY obligaciones_iga.json .
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8080} --timeout-keep-alive 300 --h11-max-incomplete-event-size 524288000"]

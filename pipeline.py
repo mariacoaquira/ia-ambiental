@@ -29,12 +29,14 @@ DOCUMENT_AI_TIMEOUT_SECONDS = 1800
 DOC_VERSION                 = "v1"
 
 # ── Clientes GCP ──────────────────────────────────────────────────
-storage_client    = storage.Client()
-documentai_client = documentai.DocumentProcessorServiceClient()
-processor_name    = documentai_client.processor_version_path(
-    GCP_PROJECT_ID, DOCUMENT_AI_LOCATION,
-    DOCUMENT_AI_PROCESSOR_ID, DOCUMENT_AI_PROCESSOR_VERSION
-)
+def _get_gcp_clients():
+    sc = storage.Client()
+    dc = documentai.DocumentProcessorServiceClient()
+    pn = dc.processor_version_path(
+        GCP_PROJECT_ID, DOCUMENT_AI_LOCATION,
+        DOCUMENT_AI_PROCESSOR_ID, DOCUMENT_AI_PROCESSOR_VERSION
+    )
+    return sc, dc, pn
 
 # ── Pega aquí todas tus funciones del notebook ────────────────────
 def normalize_text(s: str) -> str:
@@ -76,6 +78,7 @@ from pypdf import PdfReader, PdfWriter
 from typing import List, Dict, Any, Optional
 
 def process_document(gcs_file_path: str, gcs_bucket_name: str, output_prefix: Optional[str] = None) -> list[dict]:
+    storage_client, documentai_client, processor_name = _get_gcp_clients()  # ← agrega esta línea
 
     file_base = gcs_file_path.rsplit('.', 1)[0]
     gcs_input_uri = f"gs://{gcs_bucket_name}/input/{gcs_file_path}"
@@ -131,6 +134,7 @@ def process_document(gcs_file_path: str, gcs_bucket_name: str, output_prefix: Op
     return outs
 
 def process_large_pdf(local_file_path: str, gcs_bucket_name: str) -> dict:
+    storage_client, documentai_client, processor_name = _get_gcp_clients()  # ← agrega esta línea
 
     print(f"Iniciando procesamiento de {local_file_path}...")
     reader = PdfReader(local_file_path)

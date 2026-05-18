@@ -1,11 +1,18 @@
+import os, json, uuid, shutil
+
+# ── Credenciales GCP desde variable de entorno (Railway) ──────────
+_creds = os.getenv("GOOGLE_CREDENTIALS_JSON")
+if _creds:
+    _path = "/tmp/gcp_creds.json"
+    with open(_path, "w") as f:
+        f.write(_creds)
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = _path
+
 from fastapi import FastAPI, UploadFile, File, Form, BackgroundTasks, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
-import json, os, uuid, shutil
-
-# Asegúrate de importar tus motores
 from pipeline import procesar_iga
 from extractor import extraer_obligaciones
 
