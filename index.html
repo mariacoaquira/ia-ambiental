@@ -331,8 +331,7 @@ tr:hover td { background: var(--surface2); }
         <input type="password" id="login-pass" placeholder="••••••••">
       </div>
       <p id="login-error" style="color:var(--red);font-size:12px;display:none;text-align:center">Usuario o contraseña incorrectos</p>
-      <button class="btn btn-primary btn-full mt-16" onclick="doLogin()" style="padding:12px;">
-        Ingresar →
+      <button class="btn btn-primary btn-full mt-16" onclick="window.doLogin && window.doLogin()" style="padding:12px;">        Ingresar →
       </button>
       <p class="text-xs text-muted mt-12" style="text-align:center">¿Problemas para acceder? Contacta al administrador</p>
     </div>
@@ -2041,6 +2040,7 @@ function doLogin() {
     document.getElementById('login-error').style.display = 'block';
   }
 }
+window.doLogin = doLogin;
 function busquedaGlobal(q) {
   const box = document.getElementById('search-results');
   if (!q || q.length < 2) { box.innerHTML = ''; return; }
