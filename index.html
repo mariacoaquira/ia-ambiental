@@ -345,7 +345,7 @@ tr:hover td { background: var(--surface2); }
     <aside class="sidebar">
       <div class="sidebar-logo">
         <h1 class="sidebar-text">Asist. Ambiental</h1>
-        <p class="sidebar-text">CMS Grau · Panel</p>
+        <p class="sidebar-text" id="sidebar-empresa-nombre">— · Panel</p>
       </div>
       <button id="sidebar-toggle" onclick="toggleSidebar()" style="position:absolute;top:18px;right:-14px;width:28px;height:28px;border-radius:50%;background:var(--accent2);border:2px solid var(--bg);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;z-index:200;transition:all 0.2s">‹</button>
       <nav class="sidebar-nav">
@@ -357,7 +357,7 @@ tr:hover td { background: var(--surface2); }
         </div>
         <div class="nav-item" onclick="goTo('alertas')">
           <span class="nav-icon">◎</span> <span class="nav-label">Alertas</span>
-          <span class="badge badge-red" style="margin-left:auto;font-size:10px;padding:2px 7px;">3</span>
+          <span class="badge badge-red" id="badge-alertas" style="margin-left:auto;font-size:10px;padding:2px 7px;display:none">0</span>
         </div>
         <div class="nav-item" onclick="goTo('chat')">
           <span class="nav-icon">💬</span> <span class="nav-label">Chat IGA</span>
@@ -368,10 +368,10 @@ tr:hover td { background: var(--surface2); }
       </nav>
       <div class="sidebar-footer">
         <div class="sidebar-user">
-          <div class="avatar">JP</div>
+          <div class="avatar" id="sidebar-avatar">—</div>
           <div>
-            <div style="font-size:12px;color:rgba(255,255,255,0.8);font-weight:500">Jorge Pérez</div>
-            <div style="font-size:11px;color:rgba(255,255,255,0.4)">Abogado senior</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.8);font-weight:500" id="sidebar-user-nombre">Usuario</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4)" id="sidebar-user-rol">—</div>
           </div>
         </div>
       </div>
@@ -381,10 +381,13 @@ tr:hover td { background: var(--surface2); }
       <header class="topbar">
         <div class="topbar-title" id="topbar-title">Dashboard</div>
         <div class="topbar-actions">
-          <div class="search-bar" style="width:260px">
+          <div class="search-bar" style="width:280px;position:relative">
             <span class="search-icon">⌕</span>
-            <input placeholder="Buscar obligación...">
-            <button onclick="" style="background:none;border:none;cursor:pointer;color:var(--text2);font-size:16px;padding:0 2px;line-height:1">⌕</button>
+            <input id="global-search" placeholder="Buscar en todo..." autocomplete="off"
+              oninput="busquedaGlobal(this.value)"
+              onfocus="document.getElementById('search-results').style.display='block'"
+              onblur="setTimeout(()=>document.getElementById('search-results').style.display='none',200)">
+            <div id="search-results" style="display:none;position:absolute;top:38px;left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:var(--shadow-lg);max-height:320px;overflow-y:auto;z-index:999"></div>
           </div>
         </div>
       </header>
@@ -1845,6 +1848,15 @@ function guardarNuevoIGA() {
     subsector:    document.getElementById('emp-subsector').value.trim(),
     departamento: document.getElementById('emp-departamento').value.trim(),
   };
+  // Agrega dentro de guardarEmpresa() antes del saveDB():
+  if (document.getElementById('emp-cred-user').value) {
+    DB.credenciales = {
+      user:   document.getElementById('emp-cred-user').value.trim(),
+      pass:   document.getElementById('emp-cred-pass').value,
+      nombre: document.getElementById('emp-cred-nombre').value.trim(),
+      rol:    document.getElementById('emp-cred-rol').value.trim(),
+    };
+  }
   saveDB();
   closeModal('modal-empresa');
   renderDashboard();
@@ -1937,17 +1949,76 @@ function renderAlertas() {
     proximas.length  ? proximas.map(o  => cardHTML(o,'proximo')).join('') : '<p class="text-sm text-muted">Sin obligaciones próximas.</p>';
   document.getElementById('alertas-cumplidas').innerHTML =
     cumplidas.length ? cumplidas.map(o => cardHTML(o,'ok')).join('')      : '<p class="text-sm text-muted">Sin cumplidas este mes.</p>';
+  
+    const badge = document.getElementById('badge-alertas');
+  if (badge) {
+    const n = vencidas.length + proximas.length;
+    badge.textContent   = n;
+    badge.style.display = n > 0 ? 'inline' : 'none';
+  }
 }
 function doLogin() {
   const user = document.getElementById('login-user').value.trim();
   const pass = document.getElementById('login-pass').value;
   const creds = DB.credenciales || { user: 'admin', pass: 'admin123' };
+
   if (user === creds.user && pass === creds.pass) {
     document.getElementById('login-error').style.display = 'none';
+
+    // Actualizar sidebar con datos reales
+    const emp     = DB.empresa || {};
+    const initials = (emp.nombre || user).split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase() || 'U';
+    document.getElementById('sidebar-avatar').textContent      = initials;
+    document.getElementById('sidebar-user-nombre').textContent = creds.nombre || user;
+    document.getElementById('sidebar-user-rol').textContent    = creds.rol    || 'Usuario';
+    document.getElementById('sidebar-empresa-nombre').textContent =
+      (emp.nombre ? emp.nombre.split(' ').slice(0,2).join(' ') : '—') + ' · Panel';
+
     goTo('dashboard');
   } else {
     document.getElementById('login-error').style.display = 'block';
   }
+}
+function busquedaGlobal(q) {
+  const box = document.getElementById('search-results');
+  if (!q || q.length < 2) { box.innerHTML = ''; return; }
+  q = q.toLowerCase();
+  const resultados = [];
+
+  // Buscar en unidades
+  DB.unidades.forEach(uf => {
+    if (uf.nombre.toLowerCase().includes(q)) {
+      resultados.push({ tipo: 'Unidad', titulo: uf.nombre, sub: `${uf.actividad} · ${uf.departamento}`, accion: `goTo('dashboard')` });
+    }
+    // Buscar en IGAs
+    uf.igas.forEach(iga => {
+      if (iga.nombre.toLowerCase().includes(q) || iga.tipo.toLowerCase().includes(q)) {
+        resultados.push({ tipo: 'IGA', titulo: iga.nombre, sub: `${iga.tipo} · ${uf.nombre}`, accion: `goToConsolidada('${uf.nombre}','${iga.nombre}')` });
+      }
+      // Buscar en obligaciones
+      Object.values(iga.obligaciones_data || {}).flat().forEach((o, i) => {
+        if ((o.descripcion || '').toLowerCase().includes(q)) {
+          resultados.push({ tipo: 'Obligación', titulo: o.descripcion?.slice(0, 80) + '...', sub: `${iga.tipo} · ${o.etapa || ''} · ${o.frecuencia || ''}`, accion: `goTo('consolidada')` });
+        }
+      });
+    });
+  });
+
+  if (resultados.length === 0) {
+    box.innerHTML = `<div style="padding:16px;text-align:center;color:var(--text3);font-size:13px">Sin resultados para "${q}"</div>`;
+    return;
+  }
+
+  box.innerHTML = resultados.slice(0, 8).map(r => `
+    <div onclick="${r.accion};document.getElementById('global-search').value='';document.getElementById('search-results').style.display='none'"
+      style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.1s"
+      onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:var(--surface2);color:var(--text2);font-weight:600;white-space:nowrap">${r.tipo}</span>
+        <div style="font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.titulo}</div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px;padding-left:52px">${r.sub}</div>
+    </div>`).join('');
 }
   </script>
 <!-- MODAL: CONFIGURAR EMPRESA -->
@@ -1967,6 +2038,16 @@ function doLogin() {
         <div class="field"><label>Subsector</label><input type="text" id="emp-subsector" placeholder="Metálica"></div>
         <div class="field"><label>Departamento</label><input type="text" id="emp-departamento" placeholder="Lima"></div>
       </div>
+      <div class="divider"></div>
+    <div style="font-size:13px;font-weight:600;margin-bottom:12px">Acceso</div>
+    <div class="grid-2">
+      <div class="field"><label>Usuario</label><input type="text" id="emp-cred-user" placeholder="admin"></div>
+      <div class="field"><label>Contraseña</label><input type="password" id="emp-cred-pass" placeholder="••••••••"></div>
+    </div>
+    <div class="grid-2">
+      <div class="field"><label>Nombre completo</label><input type="text" id="emp-cred-nombre" placeholder="Jorge Pérez"></div>
+      <div class="field"><label>Rol</label><input type="text" id="emp-cred-rol" placeholder="Abogado senior"></div>
+    </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('modal-empresa')">Cancelar</button>
