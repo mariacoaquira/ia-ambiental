@@ -1873,7 +1873,7 @@ function guardarNuevoIGA() {
   });
   saveDB();
   renderDashboard();
-
+}
 function guardarEmpresa() {
   DB.empresa = {
     nombre:       document.getElementById('emp-nombre').value.trim(),
@@ -2081,7 +2081,6 @@ function busquedaGlobal(q) {
       </div>
       <div style="font-size:11px;color:var(--text3);margin-top:2px;padding-left:52px">${r.sub}</div>
     </div>`).join('');
-}
 }
   </script>
 </body>
