@@ -392,20 +392,21 @@ tr:hover td { background: var(--surface2); }
       <div id="screen-dashboard" class="screen active content">
         <div class="empresa-header">
           <div>
-            <h3>Sociedad Minera Cerro Verde S.A.A.</h3>
-            <p>RUC 20170072465 · Sector: Minería · Subsector: Metálica · Lima</p>
+            <h3 id="empresa-nombre">—</h3>
+            <p id="empresa-detalle">—</p>
           </div>
           <div class="empresa-stats">
-            <div class="stat"><div class="stat-n">3</div><div class="stat-l">Unidades</div></div>
-            <div class="stat"><div class="stat-n">5</div><div class="stat-l">IGAs</div></div>
-            <div class="stat"><div class="stat-n">118</div><div class="stat-l">Obligaciones</div></div>
-            <div class="stat"><div class="stat-n" style="color:#f5c842">3</div><div class="stat-l">Pendientes</div></div>
+            <div class="stat"><div class="stat-n" id="stat-unidades">0</div><div class="stat-l">Unidades</div></div>
+            <div class="stat"><div class="stat-n" id="stat-igas">0</div><div class="stat-l">IGAs</div></div>
+            <div class="stat"><div class="stat-n" id="stat-obligs">0</div><div class="stat-l">Obligaciones</div></div>
+            <div class="stat"><div class="stat-n" id="stat-pendientes" style="color:#f5c842">0</div><div class="stat-l">Pendientes</div></div>
           </div>
         </div>
 
         <div class="section-header">
           <span class="section-title">Unidades fiscalizables</span>
           <button class="btn btn-secondary btn-sm" onclick="openModal('modal-nueva-uf')">+ Agregar unidad</button>
+          <button class="btn btn-ghost btn-sm" onclick="openModal('modal-empresa')">⚙ Empresa</button>
         </div>
         <div class="unidades-grid" id="unidades-grid"></div>
         <div id="iga-panels-container"></div>
@@ -1002,7 +1003,7 @@ const API_URL = 'https://ia-ambiental-production-0b43.up.railway.app';
 // ── ESTADO ──
 let currentStep = 1;
 let currentCats = {};
-let DB = JSON.parse(localStorage.getItem('iga_db') || '{"unidades":[]}');
+let DB = JSON.parse(localStorage.getItem('iga_db') || '{"empresa":{},"unidades":[]}');
 function saveDB() { localStorage.setItem('iga_db', JSON.stringify(DB)); }
 
 // ── NAVEGACIÓN ──
@@ -1685,6 +1686,19 @@ function renderDashboard() {
   // Activar primer panel
   const firstCard = grid.querySelector('.unidad-card');
   if (firstCard) selectUF(firstCard, 'panel-uf-0', DB.unidades[0].nombre);
+// Al final de renderDashboard(), antes del cierre de la función:
+  const emp = DB.empresa || {};
+  document.getElementById('empresa-nombre').textContent  = emp.nombre  || 'Sin empresa configurada';
+  document.getElementById('empresa-detalle').textContent = emp.ruc
+    ? `RUC ${emp.ruc} · Sector: ${emp.sector||'—'} · ${emp.departamento||'—'}`
+    : 'Configura los datos de tu empresa';
+
+  const totalIgas   = DB.unidades.reduce((s, u) => s + u.igas.length, 0);
+  const totalObligs = DB.unidades.reduce((s, u) => s + u.igas.reduce((ss, g) => ss + (g.total_obligaciones||0), 0), 0);
+  document.getElementById('stat-unidades').textContent  = DB.unidades.length;
+  document.getElementById('stat-igas').textContent      = totalIgas;
+  document.getElementById('stat-obligs').textContent    = totalObligs;
+  document.getElementById('stat-pendientes').textContent = totalObligs;
 }
 
 function guardarNuevaUF() {
@@ -1726,7 +1740,44 @@ function guardarNuevoIGA() {
   });
   saveDB();
   renderDashboard();
+
+  function guardarEmpresa() {
+  DB.empresa = {
+    nombre:       document.getElementById('emp-nombre').value.trim(),
+    ruc:          document.getElementById('emp-ruc').value.trim(),
+    sector:       document.getElementById('emp-sector').value,
+    subsector:    document.getElementById('emp-subsector').value.trim(),
+    departamento: document.getElementById('emp-departamento').value.trim(),
+  };
+  saveDB();
+  closeModal('modal-empresa');
+  renderDashboard();
+}
 }
   </script>
+<!-- MODAL: CONFIGURAR EMPRESA -->
+<div id="modal-empresa" class="modal-overlay">
+  <div class="modal" style="width:500px">
+    <div class="modal-header">
+      <div class="modal-title">Datos de la empresa</div>
+      <button class="close-btn" onclick="closeModal('modal-empresa')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>Razón social *</label><input type="text" id="emp-nombre" placeholder="Ej: Sociedad Minera Cerro Verde S.A.A."></div>
+      <div class="grid-2">
+        <div class="field"><label>RUC</label><input type="text" id="emp-ruc" placeholder="20170072465"></div>
+        <div class="field"><label>Sector</label><select id="emp-sector"><option>Minería</option><option>Hidrocarburos</option><option>Energía</option><option>Industria</option></select></div>
+      </div>
+      <div class="grid-2">
+        <div class="field"><label>Subsector</label><input type="text" id="emp-subsector" placeholder="Metálica"></div>
+        <div class="field"><label>Departamento</label><input type="text" id="emp-departamento" placeholder="Lima"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-empresa')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarEmpresa()">Guardar</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
