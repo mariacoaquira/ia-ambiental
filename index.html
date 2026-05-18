@@ -362,7 +362,7 @@ tr:hover td { background: var(--surface2); }
         <div class="nav-item" onclick="goTo('chat')">
           <span class="nav-icon">💬</span> <span class="nav-label">Chat IGA</span>
         </div>
-        <div class="nav-item" style="margin-top:auto">
+        <div class="nav-item" style="margin-top:auto" onclick="goTo('configuracion')">
           <span class="nav-icon">⚙</span> <span class="nav-label">Configuración</span>
         </div>
       </nav>
@@ -410,7 +410,6 @@ tr:hover td { background: var(--surface2); }
         <div class="section-header">
           <span class="section-title">Unidades fiscalizables</span>
           <button class="btn btn-secondary btn-sm" onclick="openModal('modal-nueva-uf')">+ Agregar unidad</button>
-          <button class="btn btn-ghost btn-sm" onclick="openModal('modal-empresa')">⚙ Empresa</button>
         </div>
         <div class="unidades-grid" id="unidades-grid"></div>
         <div id="iga-panels-container"></div>
@@ -981,10 +980,11 @@ function goTo(screen) {
       detalle: 'Detalle de obligación', alertas: 'Alertas'
     }[screen] || '';
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    const navMap = {dashboard:0, consolidada:1, alertas:2, iga:0};
+    const navMap = {dashboard:0, consolidada:1, alertas:2, iga:0, configuracion:0};
     if (navMap[screen] !== undefined) document.querySelectorAll('.nav-item')[navMap[screen]].classList.add('active');
     if (screen === 'consolidada') { poblarFiltrosConsolidada(); }
     if (screen === 'dashboard') renderDashboard();
+    if (screen === 'configuracion') cargarConfiguracion();
     if (screen === 'alertas') renderAlertas();
   }
 }
@@ -1840,7 +1840,7 @@ function guardarNuevoIGA() {
   saveDB();
   renderDashboard();
 
-  function guardarEmpresa() {
+function guardarEmpresa() {
   DB.empresa = {
     nombre:       document.getElementById('emp-nombre').value.trim(),
     ruc:          document.getElementById('emp-ruc').value.trim(),
@@ -1848,7 +1848,6 @@ function guardarNuevoIGA() {
     subsector:    document.getElementById('emp-subsector').value.trim(),
     departamento: document.getElementById('emp-departamento').value.trim(),
   };
-  // Agrega dentro de guardarEmpresa() antes del saveDB():
   if (document.getElementById('emp-cred-user').value) {
     DB.credenciales = {
       user:   document.getElementById('emp-cred-user').value.trim(),
@@ -1858,8 +1857,23 @@ function guardarNuevoIGA() {
     };
   }
   saveDB();
-  closeModal('modal-empresa');
   renderDashboard();
+  const ok = document.getElementById('config-ok');
+  if (ok) { ok.style.display = 'block'; setTimeout(() => ok.style.display = 'none', 3000); }
+}
+
+function cargarConfiguracion() {
+  const emp   = DB.empresa     || {};
+  const creds = DB.credenciales || {};
+  document.getElementById('emp-nombre').value      = emp.nombre      || '';
+  document.getElementById('emp-ruc').value         = emp.ruc         || '';
+  document.getElementById('emp-subsector').value   = emp.subsector   || '';
+  document.getElementById('emp-departamento').value= emp.departamento|| '';
+  if (emp.sector) document.getElementById('emp-sector').value = emp.sector;
+  document.getElementById('emp-cred-user').value   = creds.user   || '';
+  document.getElementById('emp-cred-pass').value   = creds.pass   || '';
+  document.getElementById('emp-cred-nombre').value = creds.nombre || '';
+  document.getElementById('emp-cred-rol').value    = creds.rol    || '';
 }
 }
 
@@ -2054,6 +2068,47 @@ function busquedaGlobal(q) {
       <button class="btn btn-primary" onclick="guardarEmpresa()">Guardar</button>
     </div>
   </div>
+</div>
+<!-- ============ SCREEN: CONFIGURACIÓN ============ -->
+<div id="screen-configuracion" class="screen content" style="display:none">
+  <div class="mb-20">
+    <div style="font-size:18px;font-weight:600">Configuración</div>
+    <div class="text-sm text-muted mt-4">Datos de la empresa y acceso al sistema</div>
+  </div>
+
+  <div class="card mb-16">
+    <div class="font-600 mb-16" style="font-size:14px;border-bottom:1px solid var(--border);padding-bottom:12px">🏢 Datos de la empresa</div>
+    <div class="field"><label>Razón social *</label><input type="text" id="emp-nombre" placeholder="Ej: Sociedad Minera Cerro Verde S.A.A."></div>
+    <div class="grid-2">
+      <div class="field"><label>RUC</label><input type="text" id="emp-ruc" placeholder="20170072465"></div>
+      <div class="field"><label>Sector</label>
+        <select id="emp-sector"><option>Minería</option><option>Hidrocarburos</option><option>Energía</option><option>Industria</option></select>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="field"><label>Subsector</label><input type="text" id="emp-subsector" placeholder="Metálica"></div>
+      <div class="field"><label>Departamento</label><input type="text" id="emp-departamento" placeholder="Lima"></div>
+    </div>
+  </div>
+
+  <div class="card mb-16">
+    <div class="font-600 mb-16" style="font-size:14px;border-bottom:1px solid var(--border);padding-bottom:12px">🔐 Acceso al sistema</div>
+    <div class="grid-2">
+      <div class="field"><label>Usuario</label><input type="text" id="emp-cred-user" placeholder="admin"></div>
+      <div class="field"><label>Contraseña</label><input type="password" id="emp-cred-pass" placeholder="••••••••"></div>
+    </div>
+    <div class="grid-2">
+      <div class="field"><label>Nombre completo</label><input type="text" id="emp-cred-nombre" placeholder="Jorge Pérez"></div>
+      <div class="field"><label>Rol</label><input type="text" id="emp-cred-rol" placeholder="Abogado senior"></div>
+    </div>
+  </div>
+
+  <div style="display:flex;justify-content:flex-end;gap:10px">
+    <button class="btn btn-secondary" onclick="cargarConfiguracion()">↺ Deshacer cambios</button>
+    <button class="btn btn-primary" onclick="guardarEmpresa()">✓ Guardar configuración</button>
+  </div>
+
+  <div id="config-ok" style="display:none;margin-top:12px;text-align:right;color:var(--accent);font-size:13px">✓ Guardado correctamente</div>
 </div>
 </body>
 </html>
