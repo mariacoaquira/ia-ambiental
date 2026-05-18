@@ -455,7 +455,7 @@ tr:hover td { background: var(--surface2); }
       <div id="screen-consolidada" class="screen content">
         <div class="flex items-center justify-between mb-16">
           <div>
-            <div class="text-xs text-muted mb-4">U.P. La Querendosa · DIA 2023</div>
+            <div class="text-xs text-muted mb-4" id="consolidada-subtitulo">Todas las unidades</div>
             <div style="font-size:18px;font-weight:600">Obligaciones consolidadas</div>
           </div>
           <div class="flex gap-8">
@@ -1454,6 +1454,9 @@ function irAObligaciones() {
     if (selIGA) selIGA.value = IGA_ACTIVO.iga.nombre;
     renderCats();
   }, 50);
+  const sub = document.getElementById('consolidada-subtitulo');
+  if (sub && IGA_ACTIVO) 
+    sub.textContent = `${IGA_ACTIVO.uf.nombre} · ${IGA_ACTIVO.iga.tipo} ${IGA_ACTIVO.iga.fecha}`;
 }
 
 function irAChat() {
@@ -1552,6 +1555,8 @@ function poblarFiltrosConsolidada() {
     selUF.appendChild(opt);
   });
   onCambioUF();
+  const sub = document.getElementById('consolidada-subtitulo');
+  if (sub) sub.textContent = 'Todas las unidades';
 }
 
 // ── CHAT IGA ──
