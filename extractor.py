@@ -23,14 +23,16 @@ CACHE_DIR              = "./cache_categorias"
 os.makedirs(CACHE_DIR, exist_ok=True)
 
 # ── Clientes ──────────────────────────────────────────────────────
-cliente_claude = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-pc_client  = PineconeClient(api_key=PINECONE_API_KEY)
-idx_client = pc_client.Index(PINECONE_INDEX_NAME)
-emb        = VertexAIEmbeddings(
-    model_name=VERTEXAI_EMB_MODEL,
-    project=GCP_PROJECT_ID,
-    location=VERTEXAI_LOCATION,
-)
+def _get_clientes():
+    cliente_claude = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+    pc             = PineconeClient(api_key=PINECONE_API_KEY)
+    idx_client     = pc.Index(PINECONE_INDEX_NAME)
+    emb            = VertexAIEmbeddings(
+        model_name=VERTEXAI_EMB_MODEL,
+        project=GCP_PROJECT_ID,
+        location=VERTEXAI_LOCATION,
+    )
+    return cliente_claude, idx_client, emb
 
 # ── Categorías (las mismas que tienes en ia-ambiental.py) ─────────
 CATEGORIAS_IGA = {
@@ -90,7 +92,7 @@ CATEGORIAS_IGA = {
 }
 
 # ── Recuperar chunks ──────────────────────────────────────────────
-def recuperar_chunks(doc_id: str, query: str, top_k: int = 5) -> list:
+def recuperar_chunks(doc_id: str, query: str, idx_client, emb, top_k: int = 5) -> list:
     vector = emb.embed_query(f"query: {query}")
     res = idx_client.query(
         vector=vector,
@@ -103,7 +105,7 @@ def recuperar_chunks(doc_id: str, query: str, top_k: int = 5) -> list:
             if m.metadata.get("text", "").strip()]
 
 # ── Extraer una categoría ─────────────────────────────────────────
-def extraer_categoria(categoria: str, chunks: list) -> list:
+def extraer_categoria(categoria: str, chunks: list, cliente_claude) -> list:
     cache_path = f"{CACHE_DIR}/{categoria}.json"
     if os.path.exists(cache_path):
         print(f"    [caché] {categoria}")
@@ -212,14 +214,15 @@ Array JSON:"""
 
 # ── Función principal ─────────────────────────────────────────────
 def extraer_obligaciones(doc_id: str) -> dict:
+    cliente_claude, idx_client, emb = _get_clientes()
     print(f"\nExtrayendo obligaciones para: {doc_id}")
     print("=" * 60)
     resultado = {"doc_id": doc_id, "total": 0, "por_categoria": {}}
 
     for categoria, query in CATEGORIAS_IGA.items():
         print(f"  Procesando: {categoria}...", end=" ", flush=True)
-        chunks = recuperar_chunks(doc_id, query)
-        obligs = extraer_categoria(categoria, chunks)
+        chunks = recuperar_chunks(doc_id, query, idx_client, emb)
+        obligs = extraer_categoria(categoria, chunks, cliente_claude)
         resultado["por_categoria"][categoria] = obligs
         resultado["total"] += len(obligs)
         print(f"→ {len(obligs)} obligaciones")
