@@ -408,6 +408,7 @@ tr:hover td { background: var(--surface2); }
 
         <div class="section-header">
           <span class="section-title">Unidades fiscalizables</span>
+          <button class="btn btn-primary btn-sm" onclick="openModal('modal-nueva-uf')">+ Agregar unidad</button>
         </div>
         <div class="unidades-grid" id="unidades-grid"></div>
         <div id="iga-panels-container"></div>
@@ -1781,6 +1782,13 @@ function renderDashboard() {
         }
       </div>
     </div>`).join('');
+    
+  grid.innerHTML += `
+    <div class="unidad-card" onclick="openModal('modal-nueva-uf')"
+      style="border:2px dashed var(--border);background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--text3);min-height:100px">
+      <div style="font-size:24px">+</div>
+      <div style="font-size:12px;font-weight:500">Agregar unidad</div>
+    </div>`;
 
   panels.innerHTML = DB.unidades.map((uf, i) => `
     <div id="panel-uf-${i}" class="mt-20" ${i>0?'style="display:none"':''}>
