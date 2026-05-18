@@ -970,14 +970,14 @@ function goTo(screen) {
     return;
   }
 
-  if (screen === 'dashboard' || screen === 'consolidada' || screen === 'detalle' || screen === 'alertas' || screen === 'iga') {
+  if (screen === 'dashboard' || screen === 'consolidada' || screen === 'detalle' || screen === 'alertas' || screen === 'iga' || screen === 'configuracion') {
     document.getElementById('app-shell').style.display = 'block';
     document.getElementById('screen-login').style.display = 'none';
     const el = document.getElementById('screen-' + screen);
     if (el) el.classList.add('active');
     document.getElementById('topbar-title').textContent = {
       dashboard: 'Dashboard', consolidada: 'Obligaciones consolidadas',
-      detalle: 'Detalle de obligación', alertas: 'Alertas'
+      detalle: 'Detalle de obligación', alertas: 'Alertas', configuracion: 'Configuración'
     }[screen] || '';
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     const navMap = {dashboard:0, consolidada:1, alertas:2, iga:0, configuracion:0};
