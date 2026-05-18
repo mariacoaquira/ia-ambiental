@@ -19,7 +19,7 @@ GCP_PROJECT_ID         = os.getenv("GCP_PROJECT_ID")
 VERTEXAI_LOCATION      = "us-central1"
 VERTEXAI_EMB_MODEL     = "text-multilingual-embedding-002"
 ANTHROPIC_API_KEY      = os.getenv("ANTHROPIC_API_KEY")
-CACHE_DIR              = "./cache_categorias"
+CACHE_DIR              = "/tmp/cache_iga"
 os.makedirs(CACHE_DIR, exist_ok=True)
 
 # ── Clientes ──────────────────────────────────────────────────────
@@ -91,35 +91,50 @@ CATEGORIAS_IGA = {
     ),
 }
 
-# ── Recuperar chunks ──────────────────────────────────────────────
-def recuperar_chunks(doc_id: str, query: str, idx_client, emb, top_k: int = 5) -> list:
-    vector = emb.embed_query(f"query: {query}")
-    res = idx_client.query(
-        vector=vector,
-        top_k=top_k,
-        namespace=PINECONE_IGA_NAMESPACE,
-        filter={"doc_id": {"$eq": doc_id}},
-        include_metadata=True,
-    )
-    return [m.metadata.get("text", "") for m in res.matches
-            if m.metadata.get("text", "").strip()]
+# ── Función principal ─────────────────────────────────────────────
+def extraer_obligaciones(doc_id: str) -> dict:
+    print(f"\nExtrayendo obligaciones para: {doc_id}")
+    print("=" * 60)
+    resultado = {"doc_id": doc_id, "total": 0, "por_categoria": {}}
 
-# ── Extraer una categoría ─────────────────────────────────────────
-def extraer_categoria(categoria: str, chunks: list, cliente_claude) -> list:
-    cache_path = f"{CACHE_DIR}/{categoria}.json"
-    if os.path.exists(cache_path):
-        print(f"    [caché] {categoria}")
-        with open(cache_path, encoding="utf-8") as f:
-            return json.load(f)
+    # 1. Recuperar chunks de todas las categorías
+    print("  Recuperando chunks relevantes...")
+    chunks_vistos = set()
+    chunks_unicos = []
 
-    if not chunks:
-        return []
+    for categoria, query in CATEGORIAS_IGA.items():
+        cliente_claude, idx_client, emb = _get_clientes()
+        vector = emb.embed_query(f"query: {query}")
+        res = idx_client.query(
+            vector=vector,
+            top_k=8,
+            namespace=PINECONE_IGA_NAMESPACE,
+            filter={"doc_id": {"$eq": doc_id}},
+            include_metadata=True,
+        )
+        for m in res.matches:
+            chunk_id = m.id
+            texto = m.metadata.get("text", "").strip()
+            pagina = m.metadata.get("page", None)
+            if chunk_id not in chunks_vistos and texto:
+                chunks_vistos.add(chunk_id)
+                # Incluir página en el texto para que Claude la capture
+                prefix = f"[PÁGINA {pagina}] " if pagina else ""
+                chunks_unicos.append(f"{prefix}{texto}")
 
-    contexto = "\n\n---\n\n".join(chunks)
+    print(f"  → {len(chunks_unicos)} chunks únicos recuperados")
+
+    if not chunks_unicos:
+        return resultado
+
+    # 2. Una sola extracción con todos los chunks únicos
+    categorias_desc = "\n".join([f'  - "{c}"' for c in CATEGORIAS_IGA.keys()])
+    contexto = "\n\n---\n\n".join(chunks_unicos)
 
     prompt = f"""Eres un auditor ambiental senior del OEFA en Perú.
 Analiza los siguientes fragmentos de un Instrumento de Gestión Ambiental (IGA)
-y extrae TODAS las obligaciones fiscalizables de la categoría: "{categoria}".
+y extrae TODAS las obligaciones fiscalizables, clasificándolas en las siguientes categorías:
+{categorias_desc}
 
 REGLAS ESTRICTAS:
 1. VERBO EN INFINITIVO: Cada obligación DEBE iniciar con verbo operativo.
@@ -129,105 +144,101 @@ REGLAS ESTRICTAS:
    crea una fila por variante.
 4. SIN REFERENCIAS EXTERNAS: No escribas "ver ítem 7.4" — extrae el dato directamente.
 5. SOLO LO QUE ESTÁ EN EL TEXTO: No inferir ni inventar.
-6. Si no hay obligaciones de esta categoría, devuelve [].
-7. Responde ÚNICAMENTE con array JSON válido, sin markdown.
-8. NO DUPLIQUES obligaciones que pertenecen claramente a otra 
-   categoría. Extrae solo las obligaciones específicas de esta 
-   categoría según el contexto del fragmento.
-9. AGRUPA medidas del mismo párrafo que tienen igual responsable, 
-   etapa y frecuencia en UNA sola obligación descriptiva.
+6. NO DUPLIQUES: Cada obligación aparece en UNA sola categoría — la más específica.
+7. AGRUPA medidas del mismo párrafo que tienen igual responsable, etapa y frecuencia
+   en UNA sola obligación descriptiva.
+8. Si una categoría no tiene obligaciones en los fragmentos, devuelve [] para esa categoría.
+9. Captura el número de página indicado como [PÁGINA X] al inicio de cada fragmento
+   y asígnalo al campo "pagina" de cada obligación extraída de ese fragmento.
+10. Responde ÚNICAMENTE con objeto JSON válido, sin markdown ni texto adicional.
 
-EJEMPLOS DE EXTRACCIÓN PERFECTA:
-[
-  {{
-    "descripcion": "Regar las vías de acceso no pavimentadas con camión cisterna para suprimir la dispersión de material particulado (PM10).",
-    "plan": "Plan de Manejo Ambiental",
-    "etapa": "Construcción",
-    "frecuencia": "Diaria",
-    "componente": "Vías de acceso y frentes de trabajo",
-    "evidencia_cumplimiento": "Bitácora de riego con fecha, hora y sector",
-    "responsable": "Jefe de Operaciones",
-    "a_quien_reporta": "OEFA",
-    "normativa": null,
-    "parametros": "PM10"
-  }}
-]
+EJEMPLO DE EXTRACCIÓN PERFECTA:
+{{
+  "manejo_accesos_plataformas_pozas": [
+    {{
+      "descripcion": "Regar las vías de acceso no pavimentadas con camión cisterna para suprimir la dispersión de material particulado (PM10).",
+      "plan": "Plan de Manejo Ambiental",
+      "etapa": "Construcción",
+      "frecuencia": "Diaria",
+      "componente": "Vías de acceso y frentes de trabajo",
+      "evidencia_cumplimiento": "Bitácora de riego con fecha, hora y sector",
+      "responsable": "Jefe de Operaciones",
+      "a_quien_reporta": "OEFA",
+      "normativa": null,
+      "parametros": "PM10",
+      "pagina": 15
+    }}
+  ],
+  "control_agua_efluentes": []
+}}
 
 VALORES ESTANDARIZADOS:
 Etapa: "Construcción" | "Operación" | "Cierre" | "Post-cierre" | "Todas las etapas"
 Frecuencia: "Permanente" | "Diaria" | "Semanal" | "Quincenal" | "Mensual" |
-"Trimestral" | "Semestral" | "Anual" | "Puntual - Inicio de operaciones" |
-"Puntual - Al cierre de componente" | "Eventual - Ante derrame o emergencia" |
-"Según cronograma aprobado"
+  "Trimestral" | "Semestral" | "Anual" | "Puntual - Inicio de operaciones" |
+  "Puntual - Al cierre de componente" | "Eventual - Ante derrame o emergencia" |
+  "Según cronograma aprobado"
 Autoridad: "OEFA" | "MINEM" | "DGAAM" | "ANA" | "GORE" | "DIGESA" | "No especificado"
 
-FRAGMENTOS DEL DOCUMENTO:
-{contexto}
+FRAGMENTOS DEL DOCUMENTO (con número de página):
+{{contexto}}
 
-Array JSON:"""
+JSON:"""
 
-    for intento in range(3):  # 3 intentos es suficiente con Claude
+    cliente_claude, _, _ = _get_clientes()
+    # Cache por doc_id para no reprocesar
+    cache_path = f"{CACHE_DIR}/{doc_id.replace(':','_').replace('/','_')}.json"
+    os.makedirs(CACHE_DIR, exist_ok=True)
+    if os.path.exists(cache_path):
+        print(f"  [caché] Usando resultado previo para {doc_id}")
+        with open(cache_path, encoding="utf-8") as f:
+            return json.load(f)
+
+    cliente_claude, _, _ = _get_clientes()
+    for intento in range(3):
         try:
             response = cliente_claude.messages.create(
                 model="claude-haiku-4-5",
                 max_tokens=8192,
-                temperature=0, 
+                temperature=0,
                 messages=[{"role": "user", "content": prompt}]
             )
-
             text = response.content[0].text.strip()
-
-            if "```json" in text:
-                text = text.split("```json")[1]
-            if "```" in text:
-                text = text.split("```")[0]
-            text = text.strip()
-
-            inicio = text.find("[")
-            fin = text.rfind("]")
+            # Limpiar markdown
+            text = re.sub(r'```json|```', '', text).strip()
+            inicio = text.find("{")
+            fin    = text.rfind("}")
             if inicio != -1 and fin != -1:
                 text = text[inicio:fin+1]
 
-            obligs = json.loads(text)
-            obligs = obligs if isinstance(obligs, list) else []
+            data = json.loads(text)
 
+            # Rellenar todas las categorías
+            for cat in CATEGORIAS_IGA:
+                obligs = data.get(cat, [])
+                obligs = obligs if isinstance(obligs, list) else []
+                resultado["por_categoria"][cat] = obligs
+                resultado["total"] += len(obligs)
+                print(f"  {cat}: {len(obligs)} obligaciones")
+
+            print(f"\nTOTAL: {resultado['total']} obligaciones extraídas")
+            # Guardar en caché
             with open(cache_path, "w", encoding="utf-8") as f:
-                json.dump(obligs, f, ensure_ascii=False, indent=2)
-
-            return obligs
+                json.dump(resultado, f, ensure_ascii=False, indent=2)
+            return resultado
 
         except json.JSONDecodeError:
-            print(f"    [intento {intento+1}/3] JSON malformado, reintentando...")
+            print(f"  [intento {intento+1}/3] JSON malformado, reintentando...")
             time.sleep(5)
-
         except Exception as e:
             msg = str(e)
-            if 'overloaded' in msg.lower() or '529' in msg:
-                print(f"    [Claude sobrecargado] Esperando 30s...")
+            if 'overloaded' in msg.lower():
+                print(f"  [Claude sobrecargado] Esperando 30s...")
                 time.sleep(30)
             else:
-                print(f"    [error]: {msg[:80]}")
+                print(f"  [error]: {msg[:80]}")
                 break
 
-    print(f"    [fallo definitivo en '{categoria}']")
-    return []
-
-# ── Función principal ─────────────────────────────────────────────
-def extraer_obligaciones(doc_id: str) -> dict:
-    cliente_claude, idx_client, emb = _get_clientes()
-    print(f"\nExtrayendo obligaciones para: {doc_id}")
-    print("=" * 60)
-    resultado = {"doc_id": doc_id, "total": 0, "por_categoria": {}}
-
-    for categoria, query in CATEGORIAS_IGA.items():
-        print(f"  Procesando: {categoria}...", end=" ", flush=True)
-        chunks = recuperar_chunks(doc_id, query, idx_client, emb)
-        obligs = extraer_categoria(categoria, chunks, cliente_claude)
-        resultado["por_categoria"][categoria] = obligs
-        resultado["total"] += len(obligs)
-        print(f"→ {len(obligs)} obligaciones")
-
-    print(f"\nTOTAL: {resultado['total']} obligaciones extraídas")
     return resultado
 
 
