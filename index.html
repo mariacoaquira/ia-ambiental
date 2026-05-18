@@ -1907,6 +1907,14 @@ function guardarEmpresa() {
   renderDashboard();
   const ok = document.getElementById('config-ok');
   if (ok) { ok.style.display = 'block'; setTimeout(() => ok.style.display = 'none', 3000); }
+  // Al final de guardarEmpresa(), antes del }:
+  const empN = DB.empresa || {};
+  if (document.getElementById('empresa-nombre'))
+    document.getElementById('empresa-nombre').textContent = empN.nombre || 'Sin empresa configurada';
+  if (document.getElementById('empresa-detalle'))
+    document.getElementById('empresa-detalle').textContent = empN.ruc
+      ? `RUC ${empN.ruc} · Sector: ${empN.sector||'—'} · ${empN.departamento||'—'}`
+      : 'Configura los datos de tu empresa';
 }
 
 function cargarConfiguracion() {
