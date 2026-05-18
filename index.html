@@ -697,6 +697,41 @@ tr:hover td { background: var(--surface2); }
           <div id="alertas-cumplidas"></div>
         </div>
       </div>
+      <!-- ============ SCREEN: CONFIGURACIÓN ============ -->
+      <div id="screen-configuracion" class="screen content">
+        <div class="mb-20">
+          <div style="font-size:18px;font-weight:600">Configuración</div>
+          <div class="text-sm text-muted mt-4">Datos de la empresa y acceso al sistema</div>
+        </div>
+        <div class="card mb-16">
+          <div class="font-600 mb-16" style="font-size:14px;border-bottom:1px solid var(--border);padding-bottom:12px">🏢 Datos de la empresa</div>
+          <div class="field"><label>Razón social *</label><input type="text" id="emp-nombre" placeholder="Ej: Sociedad Minera Cerro Verde S.A.A."></div>
+          <div class="grid-2">
+            <div class="field"><label>RUC</label><input type="text" id="emp-ruc" placeholder="20170072465"></div>
+            <div class="field"><label>Sector</label><select id="emp-sector"><option>Minería</option><option>Hidrocarburos</option><option>Energía</option><option>Industria</option></select></div>
+          </div>
+          <div class="grid-2">
+            <div class="field"><label>Subsector</label><input type="text" id="emp-subsector" placeholder="Metálica"></div>
+            <div class="field"><label>Departamento</label><input type="text" id="emp-departamento" placeholder="Lima"></div>
+          </div>
+        </div>
+        <div class="card mb-16">
+          <div class="font-600 mb-16" style="font-size:14px;border-bottom:1px solid var(--border);padding-bottom:12px">🔐 Acceso al sistema</div>
+          <div class="grid-2">
+            <div class="field"><label>Usuario</label><input type="text" id="emp-cred-user" placeholder="admin"></div>
+            <div class="field"><label>Contraseña</label><input type="password" id="emp-cred-pass" placeholder="••••••••"></div>
+          </div>
+          <div class="grid-2">
+            <div class="field"><label>Nombre completo</label><input type="text" id="emp-cred-nombre" placeholder="Jorge Pérez"></div>
+            <div class="field"><label>Rol</label><input type="text" id="emp-cred-rol" placeholder="Abogado senior"></div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:10px">
+          <button class="btn btn-secondary" onclick="cargarConfiguracion()">↺ Deshacer cambios</button>
+          <button class="btn btn-primary" onclick="guardarEmpresa()">✓ Guardar configuración</button>
+        </div>
+        <div id="config-ok" style="display:none;margin-top:12px;text-align:right;color:var(--accent);font-size:13px">✓ Guardado correctamente</div>
+      </div>
     </main>
   </div>
 </div>
@@ -2068,47 +2103,6 @@ function busquedaGlobal(q) {
       <button class="btn btn-primary" onclick="guardarEmpresa()">Guardar</button>
     </div>
   </div>
-</div>
-<!-- ============ SCREEN: CONFIGURACIÓN ============ -->
-<div id="screen-configuracion" class="screen content" style="display:none">
-  <div class="mb-20">
-    <div style="font-size:18px;font-weight:600">Configuración</div>
-    <div class="text-sm text-muted mt-4">Datos de la empresa y acceso al sistema</div>
-  </div>
-
-  <div class="card mb-16">
-    <div class="font-600 mb-16" style="font-size:14px;border-bottom:1px solid var(--border);padding-bottom:12px">🏢 Datos de la empresa</div>
-    <div class="field"><label>Razón social *</label><input type="text" id="emp-nombre" placeholder="Ej: Sociedad Minera Cerro Verde S.A.A."></div>
-    <div class="grid-2">
-      <div class="field"><label>RUC</label><input type="text" id="emp-ruc" placeholder="20170072465"></div>
-      <div class="field"><label>Sector</label>
-        <select id="emp-sector"><option>Minería</option><option>Hidrocarburos</option><option>Energía</option><option>Industria</option></select>
-      </div>
-    </div>
-    <div class="grid-2">
-      <div class="field"><label>Subsector</label><input type="text" id="emp-subsector" placeholder="Metálica"></div>
-      <div class="field"><label>Departamento</label><input type="text" id="emp-departamento" placeholder="Lima"></div>
-    </div>
-  </div>
-
-  <div class="card mb-16">
-    <div class="font-600 mb-16" style="font-size:14px;border-bottom:1px solid var(--border);padding-bottom:12px">🔐 Acceso al sistema</div>
-    <div class="grid-2">
-      <div class="field"><label>Usuario</label><input type="text" id="emp-cred-user" placeholder="admin"></div>
-      <div class="field"><label>Contraseña</label><input type="password" id="emp-cred-pass" placeholder="••••••••"></div>
-    </div>
-    <div class="grid-2">
-      <div class="field"><label>Nombre completo</label><input type="text" id="emp-cred-nombre" placeholder="Jorge Pérez"></div>
-      <div class="field"><label>Rol</label><input type="text" id="emp-cred-rol" placeholder="Abogado senior"></div>
-    </div>
-  </div>
-
-  <div style="display:flex;justify-content:flex-end;gap:10px">
-    <button class="btn btn-secondary" onclick="cargarConfiguracion()">↺ Deshacer cambios</button>
-    <button class="btn btn-primary" onclick="guardarEmpresa()">✓ Guardar configuración</button>
-  </div>
-
-  <div id="config-ok" style="display:none;margin-top:12px;text-align:right;color:var(--accent);font-size:13px">✓ Guardado correctamente</div>
 </div>
 </body>
 </html>
