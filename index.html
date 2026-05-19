@@ -1059,15 +1059,9 @@ async function renderCats() {
       }
 
       if (igaEncontrado?.obligs && Object.keys(igaEncontrado.obligs).length > 0) {
-        // Usar obligaciones guardadas localmente
         TODAS_OBLIGS = igaEncontrado.obligs;
-      } else if (igaEncontrado?.doc_id) {
-        // Cargar desde el backend
-        const res  = await fetch(`${API_URL}/api/jobs/${igaEncontrado.doc_id}/obligaciones`);
-        const data = await res.json();
-        TODAS_OBLIGS = data.por_categoria || {};
       } else {
-        container.innerHTML = '<div class="card" style="text-align:center;padding:40px"><div style="font-size:32px;margin-bottom:12px">📋</div><div class="font-600 mb-8">Sin obligaciones cargadas</div><p class="text-sm text-muted">Selecciona un IGA o procesa uno nuevo desde el Dashboard.</p></div>';
+        container.innerHTML = '<div class="card" style="text-align:center;padding:40px"><p class="text-sm text-muted">Sin obligaciones guardadas para este IGA.</p></div>';
         return;
       }
     }
@@ -1223,8 +1217,8 @@ function nextStep() {
   if (currentStep === 4) {
     guardarNuevoIGA();
     closeModal('modal-nuevo-iga');
-    TODAS_OBLIGS = {};
     goTo('consolidada');
+    TODAS_OBLIGS = {}; 
     return;
   }
 }
@@ -1782,7 +1776,7 @@ function renderDashboard() {
         }
       </div>
     </div>`).join('');
-    
+
   grid.innerHTML += `
     <div class="unidad-card" onclick="openModal('modal-nueva-uf')"
       style="border:2px dashed var(--border);background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--text3);min-height:100px">
@@ -1812,6 +1806,9 @@ function renderDashboard() {
                   </div>
                   <div class="iga-obligs">${g.total_obligaciones || 0} obligaciones</div>
                   <span class="badge badge-green">Activo</span>
+                  <button onclick="event.stopPropagation();eliminarIGA('${uf.nombre}','${g.nombre}')"
+                    style="background:none;border:none;cursor:pointer;color:var(--red);font-size:14px;padding:4px 8px;margin-left:auto"
+                    title="Eliminar IGA">🗑</button>
                   <span style="color:var(--text3);font-size:18px">›</span>
                 </div>`).join('')
           }
@@ -1872,16 +1869,17 @@ function guardarNuevoIGA() {
 
   // Agregar obligaciones_data al objeto del IGA:
   uf.igas.push({
-      nombre,
-      tipo,
-      resolucion: document.getElementById('input-resolucion')?.value?.trim() || 'Pendiente',
-      fecha:      document.getElementById('input-fecha-aprobacion')?.value
-                    ? new Date(document.getElementById('input-fecha-aprobacion').value)
-                        .toLocaleDateString('es-PE')
-                    : new Date().toLocaleDateString('es-PE'),
-      total_obligaciones: total,
-      doc_id:             JOB_ID_ACTUAL || null,
-      obligaciones_data:  TODAS_OBLIGS   // ← agrega esta línea
+    nombre,
+    tipo,
+    fecha:              document.getElementById('input-fecha-aprobacion')?.value
+                          ? new Date(document.getElementById('input-fecha-aprobacion').value)
+                              .toLocaleDateString('es-PE')
+                          : new Date().toLocaleDateString('es-PE'),
+    resolucion:         document.getElementById('input-resolucion')?.value?.trim() || 'Pendiente',
+    total_obligaciones: total,
+    doc_id:             JOB_ID_ACTUAL || null,
+    obligs:             JSON.parse(JSON.stringify(TODAS_OBLIGS)), // copia profunda
+    obligaciones_data:  JSON.parse(JSON.stringify(TODAS_OBLIGS))
   });
   saveDB();
   renderDashboard();
@@ -2101,6 +2099,14 @@ function busquedaGlobal(q) {
       </div>
       <div style="font-size:11px;color:var(--text3);margin-top:2px;padding-left:52px">${r.sub}</div>
     </div>`).join('');
+}
+function eliminarIGA(ufNombre, igaNombre) {
+  if (!confirm(`¿Eliminar "${igaNombre}"? Esta acción no se puede deshacer.`)) return;
+  const uf = DB.unidades.find(u => u.nombre === ufNombre);
+  if (!uf) return;
+  uf.igas = uf.igas.filter(g => g.nombre !== igaNombre);
+  saveDB();
+  renderDashboard();
 }
   </script>
 </body>
