@@ -97,15 +97,17 @@ REGLAS ESTRICTAS:
 1. VERBO EN INFINITIVO: Cada obligación DEBE iniciar con verbo operativo.
    Ejemplos: "Implementar", "Regar", "Disponer", "Monitorear", "Instalar".
 2. DETALLE MÁXIMO: Incluye parámetros exactos, frecuencias y ubicaciones del texto.
-3. UNA MEDIDA = UNA OBLIGACIÓN: Si aplica en áreas distintas con diferente frecuencia,
-   crea una fila por variante.
+3. UNA MEDIDA = UNA OBLIGACIÓN: Solo separa si tienen DIFERENTE frecuencia O componente.
+   LÍMITE ESTRICTO: máximo 4 obligaciones por chunk de 2000 caracteres.
 4. SIN REFERENCIAS EXTERNAS: No escribas "ver ítem 7.4" — extrae el dato directamente.
 5. SOLO LO QUE ESTÁ EN EL TEXTO: No inferir ni inventar.
 6. SOLO categoría "{categoria}": Si un fragmento contiene obligaciones de otra
    categoría, ignóralas completamente.
 7. Si no hay obligaciones de esta categoría, devuelve [].
-8. AGRUPA medidas del mismo párrafo que tienen igual responsable, etapa y frecuencia
-   en UNA sola obligación descriptiva.
+8. AGRUPA AGRESIVAMENTE: Pasos de un mismo proceso van en UNA obligación.
+   MAL: "Segregar residuos" + "Almacenar en cilindros" + "Contratar EPS-RS" = 3 filas.
+   BIEN: "Gestionar residuos peligrosos mediante segregación, almacenamiento en
+   cilindros rotulados y disposición final con EPS-RS autorizada." = 1 fila.
 9. Captura el número de página del prefijo [PÁGINA X] y asígnalo al campo "pagina".
 10. Responde ÚNICAMENTE con array JSON válido, sin markdown ni texto adicional.
 
@@ -232,6 +234,14 @@ def extraer_obligaciones(doc_id: str) -> dict:
 
         if mejor_score >= SCORE_MINIMO:
             chunks_por_categoria[mejor_categoria].append(chunk)
+
+    # Ordenar por score y limitar a 5 por categoría
+    for cat in chunks_por_categoria:
+        chunks_por_categoria[cat] = sorted(
+            chunks_por_categoria[cat],
+            key=lambda x: x["scores"][cat],
+            reverse=True
+        )[:5]
 
     print("\n  Distribución de chunks por categoría:")
     for cat, chunks in chunks_por_categoria.items():
