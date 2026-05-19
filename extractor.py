@@ -194,6 +194,9 @@ def extraer_obligaciones(doc_id: str) -> dict:
     # ── Caché por doc_id ──────────────────────────────────────────
     os.makedirs(CACHE_DIR, exist_ok=True)
     cache_path = f"{CACHE_DIR}/{doc_id.replace(':','_').replace('/','_')}.json"
+    print(f"  [caché] Buscando: {cache_path}")  # ← AGREGA
+    if os.path.exists(cache_path):
+        print(f"  [caché] Encontrado — devolviendo resultado previo")  # ← AGREGA
     if os.path.exists(cache_path):
         print(f"  [caché] Usando resultado previo para {doc_id}")
         with open(cache_path, encoding="utf-8") as f:
@@ -243,9 +246,14 @@ def extraer_obligaciones(doc_id: str) -> dict:
         if mejor_score >= SCORE_MINIMO:
             chunks_por_categoria[mejor_categoria].append(chunk)
 
+    print("\n  Distribución de chunks por categoría:")
     for cat, chunks in chunks_por_categoria.items():
-        print(f"  → {cat}: {len(chunks)} chunks asignados")
-
+        if chunks:
+            scores = [f"{c['scores'][cat]:.3f}" for c in chunks]
+            print(f"    {cat}: {len(chunks)} chunks | scores: {', '.join(scores)}")
+        else:
+            print(f"    {cat}: 0 chunks")
+            
     # ── FASE 2: Extracción por categoría ─────────────────────────
     print("\n  [Fase 2] Extrayendo obligaciones por categoría...")
     for categoria in CATEGORIAS_IGA:
