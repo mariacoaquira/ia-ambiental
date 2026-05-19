@@ -1051,7 +1051,9 @@ async function renderCats() {
       let igaEncontrado = null;
       for (const uf of DB.unidades) {
         for (const iga of uf.igas) {
-          if (igaSel === 'todos' || iga.nombre === igaSel) {
+          if (IGA_ACTIVO && iga.nombre === IGA_ACTIVO.iga.nombre) {
+            igaEncontrado = iga; break;
+          } else if (!IGA_ACTIVO && (igaSel === 'todos' || iga.nombre === igaSel)) {
             igaEncontrado = iga; break;
           }
         }
@@ -1235,7 +1237,7 @@ function nextStep() {
     guardarNuevoIGA();
     closeModal('modal-nuevo-iga');
     goTo('consolidada');
-    TODAS_OBLIGS = {}; 
+    setTimeout(() => { TODAS_OBLIGS = {}; renderCats(); }, 100);
     return;
   }
 }
