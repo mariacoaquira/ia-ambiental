@@ -179,6 +179,16 @@ def procesar_iga_background(job_id: str, pdf_path: str, tipo_iga: str, nombre_ig
                 "resultado": resultado
             }, f, ensure_ascii=False, indent=2)
 
+        try:
+            from google.cloud import storage as gcs
+            sc     = gcs.Client()
+            bucket = sc.bucket("asistente-ambiental")
+            blob   = bucket.blob(f"resultados/{doc_id.replace(':','_')}.json")
+            blob.upload_from_filename(output_path)
+            print(f"  [GCS] Guardado en gs://asistente-ambiental/resultados/")
+        except Exception as e:
+            print(f"  [GCS] Error al guardar: {e}")
+
         jobs[job_id] = {
             "status":    "completado",
             "paso":      "Listo",
@@ -244,15 +254,33 @@ def get_job_status(job_id: str):
 
 @app.get("/api/jobs/{job_id}/obligaciones")
 def get_job_obligaciones(job_id: str):
-    """Devuelve las obligaciones extraídas de un job completado."""
+    # Buscar primero en disco local
     output_path = os.path.join(JOBS_DIR, f"{job_id}.json")
-    if not os.path.exists(output_path):
-        return JSONResponse(status_code=404, content={"error": "Job no encontrado o en proceso"})
-    with open(output_path, encoding="utf-8") as f:
-        data = json.load(f)
-    resultado = data.get("resultado", {})
-    return {**resultado, "por_categoria": resultado.get("por_categoria", {})}
+    if os.path.exists(output_path):
+        with open(output_path, encoding="utf-8") as f:
+            data = json.load(f)
+        resultado = data.get("resultado", {})
+        return {**resultado, "por_categoria": resultado.get("por_categoria", {})}
 
+    return JSONResponse(status_code=404, content={"error": "Job no encontrado o en proceso"})
+
+
+@app.get("/api/obligaciones/doc/{doc_id}")
+def get_obligaciones_por_doc(doc_id: str):
+    """Devuelve obligaciones por doc_id desde GCS — persistente."""
+    try:
+        from google.cloud import storage as gcs
+        sc     = gcs.Client()
+        bucket = sc.bucket("asistente-ambiental")
+        blob   = bucket.blob(f"resultados/{doc_id.replace(':','_')}.json")
+        if not blob.exists():
+            return JSONResponse(status_code=404, content={"error": "No encontrado en GCS"})
+        data     = json.loads(blob.download_as_text())
+        resultado = data.get("resultado", {})
+        return {**resultado, "por_categoria": resultado.get("por_categoria", {})}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+    
 @app.post("/api/chat")
 async def chat_endpoint(request: dict):
     from chatbot import chat_con_iga

@@ -1060,8 +1060,25 @@ async function renderCats() {
 
       if (igaEncontrado?.obligs && Object.keys(igaEncontrado.obligs).length > 0) {
         TODAS_OBLIGS = igaEncontrado.obligs;
+      } else if (igaEncontrado?.doc_id) {
+        try {
+          const res  = await fetch(`${API_URL}/api/obligaciones/doc/${igaEncontrado.doc_id}`);
+          const data = await res.json();
+          if (data.por_categoria) {
+            TODAS_OBLIGS = data.por_categoria;
+            // Guardar en DB para próximas consultas
+            igaEncontrado.obligs = JSON.parse(JSON.stringify(TODAS_OBLIGS));
+            saveDB();
+          } else {
+            container.innerHTML = '<div class="card" style="text-align:center;padding:40px"><p class="text-sm text-muted">Sin obligaciones para este IGA.</p></div>';
+            return;
+          }
+        } catch(e) {
+          container.innerHTML = '<div class="card" style="text-align:center;padding:40px"><p class="text-sm text-muted">Error cargando obligaciones.</p></div>';
+          return;
+        }
       } else {
-        container.innerHTML = '<div class="card" style="text-align:center;padding:40px"><p class="text-sm text-muted">Sin obligaciones guardadas para este IGA.</p></div>';
+        container.innerHTML = '<div class="card" style="text-align:center;padding:40px"><p class="text-sm text-muted">Sin obligaciones para este IGA.</p></div>';
         return;
       }
     }

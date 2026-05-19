@@ -320,6 +320,20 @@ Array JSON sin duplicados:"""
     with open(cache_path, "w", encoding="utf-8") as f:
         json.dump(resultado, f, ensure_ascii=False, indent=2)
 
+# Al final, antes del return resultado:
+    try:
+        from google.cloud import storage as gcs
+        sc     = gcs.Client()
+        bucket = sc.bucket("asistente-ambiental")
+        blob   = bucket.blob(f"resultados/{doc_id.replace(':','_')}.json")
+        blob.upload_from_string(
+            json.dumps({"resultado": resultado}, ensure_ascii=False),
+            content_type="application/json"
+        )
+        print(f"  [GCS] Caché guardado en GCS")
+    except Exception as e:
+        print(f"  [GCS] Error: {e}")
+
     return resultado
 
 
