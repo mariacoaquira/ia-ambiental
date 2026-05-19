@@ -283,3 +283,11 @@ async def servir_pdf(nombre_archivo: str):
         media_type="application/pdf",
         headers={"Content-Disposition": f"inline; filename={nombre_archivo}"}
     )
+
+@app.get("/api/jobs/{job_id}/download")
+def download_job(job_id: str):
+    from fastapi.responses import FileResponse
+    output_path = os.path.join(JOBS_DIR, f"{job_id}.json")
+    if not os.path.exists(output_path):
+        return JSONResponse(status_code=404, content={"error": "No encontrado"})
+    return FileResponse(output_path, filename=f"obligaciones_{job_id}.json")

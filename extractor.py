@@ -36,58 +36,45 @@ def _get_clientes():
 
 # ── Categorías ────────────────────────────────────────────────────
 CATEGORIAS_IGA = {
-    "manejo_accesos_plataformas_pozas": (
+    "manejo_infraestructura_suelo": (
         "habilitación construcción rehabilitación accesos plataformas "
-        "perforación pozas sedimentación lodo material removido "
-        "erosión hídrica eólica geomembrana taludes cunetas canales"
+        "perforación pozas sedimentación lodo material removido taludes "
+        "cunetas canales geomembrana erosión hídrica eólica nivelación "
+        "relleno revegetación cierre desmantelamiento obturación sondajes "
+        "especies nativas suelo orgánico infraestructura equipos remoción"
     ),
-    "control_agua_efluentes": (
-        "calidad agua efluentes descarga cuerpos agua superficial "
-        "recirculación aguas residuales industriales LMP pozas "
-        "infiltración bocamina tratamiento sistema bombeo"
+    "control_agua_aire_ruido": (
+        "calidad agua efluentes descarga cuerpos agua superficial LMP "
+        "recirculación aguas residuales tratamiento sistema bombeo bocamina "
+        "emisiones gases combustión material particulado polvo PM10 ruido "
+        "vibraciones mantenimiento vehículos maquinaria silenciadores "
+        "riego periódico secano calidad aire monitoreo parámetros"
     ),
-    "control_emisiones_ruido_polvo": (
-        "emisiones gases combustión material particulado polvo PM10 "
-        "ruido vibraciones mantenimiento vehículos maquinaria "
-        "silenciadores riego periódico secano calidad aire"
+    "residuos_sustancias_derrames": (
+        "residuos sólidos peligrosos domésticos industriales EPS-RS DIGESA "
+        "almacenamiento temporal cilindros colores segregación sustancias "
+        "químicas combustibles aceites insumos geomembrana bandeja contención "
+        "baño químico disposición final derrames hidrocarburos paños absorbentes "
+        "Landfarm suelo contaminado contingencias emergencias plan respuesta"
     ),
-    "manejo_residuos_sustancias": (
-        "residuos sólidos peligrosos domésticos industriales EPS-RS "
-        "DIGESA almacenamiento temporal cilindros colores segregación "
-        "sustancias químicas combustibles aceites insumos perforación "
-        "geomembrana bandeja contención baño químico disposición final"
+    "flora_fauna_arqueologia_social": (
+        "flora fauna cactáceas rescate reubicación especies nativas hábitat "
+        "perturbado ahuyentamiento velocidad vehículos cobertura vegetal "
+        "biodiversidad recursos arqueológicos CIRAs patrimonio cultural "
+        "Ministerio Cultura hallazgo participación ciudadana relaciones "
+        "comunitarias empleo local talleres información comunicaciones"
     ),
-    "control_derrames_emergencias": (
-        "derrames hidrocarburos paños absorbentes microfibras "
-        "contingencias emergencias incendio sismo evacuación "
-        "Landfarm suelo contaminado plan respuesta procedimientos"
+    "seguridad_salud_capacitacion": (
+        "equipos protección personal EPP cascos lentes zapatos guantes "
+        "protectores auditivos chalecos reflectores seguridad salud "
+        "ocupacional capacitación señalización procedimientos evacuación "
+        "incendio sismo emergencias plan respuesta implementar sistemas"
     ),
-    "proteccion_flora_fauna": (
-        "flora fauna cactáceas rescate reubicación especies nativas "
-        "hábitat perturbado ruido ahuyentamiento silenciadores "
-        "velocidad vehículos cobertura vegetal biodiversidad"
-    ),
-    "proteccion_arqueologica_social": (
-        "recursos arqueológicos CIRAs patrimonio cultural Ministerio "
-        "Cultura hallazgo comunicaciones participación ciudadana "
-        "relaciones comunitarias empleo local talleres información"
-    ),
-    "equipos_seguridad_personal": (
-        "equipos protección personal EPP cascos lentes zapatos "
-        "guantes protectores auditivos chalecos reflectores "
-        "seguridad salud ocupacional capacitación señalización "
-        "implementar sistemas comprometidos IGA infraestructura"
-    ),
-    "cierre_rehabilitacion_revegetacion": (
-        "cierre plataformas pozas lodo accesos rehabilitación "
-        "relleno rasgado recubrimiento nivelación revegetación "
-        "especies nativas suelo orgánico obturación sondajes "
-        "desmantelamiento remoción infraestructura equipos"
-    ),
-    "monitoreo_seguimiento": (
-        "monitoreo seguimiento post cierre estabilidad taludes "
-        "superficies intervenidas cronograma frecuencia parámetros "
-        "puntos control laboratorio acreditado reporte ambiental"
+    "monitoreo_seguimiento_reporte": (
+        "monitoreo seguimiento post cierre estabilidad taludes superficies "
+        "intervenidas cronograma frecuencia parámetros puntos control "
+        "laboratorio acreditado reporte ambiental OEFA MINEM DGAAM ANA "
+        "registro bitácora informe trimestral semestral anual verificación"
     ),
 }
 
@@ -253,7 +240,7 @@ def extraer_obligaciones(doc_id: str) -> dict:
             print(f"    {cat}: {len(chunks)} chunks | scores: {', '.join(scores)}")
         else:
             print(f"    {cat}: 0 chunks")
-            
+
     # ── FASE 2: Extracción por categoría ─────────────────────────
     print("\n  [Fase 2] Extrayendo obligaciones por categoría...")
     for categoria in CATEGORIAS_IGA:
@@ -266,6 +253,58 @@ def extraer_obligaciones(doc_id: str) -> dict:
         print(f"→ {len(obligs)} obligaciones")
 
     print(f"\nTOTAL: {resultado['total']} obligaciones extraídas")
+
+    # ── Paso 3: Deduplicación final con Claude ────────────────────
+    print("\n  [Fase 3] Deduplicando obligaciones con Claude...")
+    todas_obligs = []
+    for cat, obligs in resultado["por_categoria"].items():
+        for o in obligs:
+            o["_categoria"] = cat
+            todas_obligs.append(o)
+
+    if len(todas_obligs) > 5:
+        prompt_dedup = f"""Eres un auditor ambiental senior del OEFA.
+Revisa esta lista de obligaciones extraídas de un IGA y elimina duplicados semánticos.
+Dos obligaciones son duplicadas si describen la MISMA acción aunque usen palabras distintas.
+Conserva la versión más completa y detallada de cada obligación.
+NO elimines obligaciones distintas aunque sean similares.
+Responde ÚNICAMENTE con el array JSON filtrado, sin markdown.
+
+OBLIGACIONES:
+{json.dumps(todas_obligs, ensure_ascii=False)}
+
+Array JSON sin duplicados:"""
+
+        try:
+            response = cliente_claude.messages.create(
+                model="claude-haiku-4-5",
+                max_tokens=8192,
+                temperature=0,
+                messages=[{"role": "user", "content": prompt_dedup}]
+            )
+            text = response.content[0].text.strip()
+            text = re.sub(r'```json|```', '', text).strip()
+            inicio = text.find("[")
+            fin    = text.rfind("]")
+            if inicio != -1 and fin != -1:
+                text = text[inicio:fin+1]
+            obligs_dedup = json.loads(text)
+
+            # Reconstruir por_categoria
+            resultado["por_categoria"] = {cat: [] for cat in CATEGORIAS_IGA}
+            resultado["total"] = 0
+            for o in obligs_dedup:
+                cat = o.pop("_categoria", None)
+                if cat and cat in resultado["por_categoria"]:
+                    resultado["por_categoria"][cat].append(o)
+                    resultado["total"] += 1
+            print(f"  [Fase 3] {len(todas_obligs)} → {resultado['total']} obligaciones tras deduplicación")
+        except Exception as e:
+            print(f"  [Fase 3] Error en deduplicación: {e} — conservando resultado original")
+            # Limpiar _categoria si falló
+            for cat, obligs in resultado["por_categoria"].items():
+                for o in obligs:
+                    o.pop("_categoria", None)
 
     # ── Guardar caché ─────────────────────────────────────────────
     with open(cache_path, "w", encoding="utf-8") as f:
